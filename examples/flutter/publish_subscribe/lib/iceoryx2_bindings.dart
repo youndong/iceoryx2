@@ -4,23 +4,30 @@ import 'package:ffi/ffi.dart';
 
 // Load the iceoryx2 FFI library
 final DynamicLibrary _lib = Platform.isLinux
-    ? DynamicLibrary.open('/home/youndong/projects/iceoryx2/iceoryx2/target/release/libiceoryx2_ffi.so')
+    ? DynamicLibrary.open(
+        '/home/youndong/projects/iceoryx2/iceoryx2/target/release/libiceoryx2_ffi.so')
     : throw UnsupportedError('Platform not supported');
 
 // Opaque pointer types for iceoryx2 objects
 final class Iox2Node extends Opaque {}
+
 final class Iox2NodeBuilder extends Opaque {}
+
 final class Iox2Publisher extends Opaque {}
+
 final class Iox2Subscriber extends Opaque {}
+
 final class Iox2Sample extends Opaque {}
+
 final class Iox2PortFactory extends Opaque {}
+
 final class Iox2WaitSet extends Opaque {}
 
 // Result enum values
 const int IOX2_OK = 0;
 const int IOX2_ERROR = 1;
 
-// Service type enum values  
+// Service type enum values
 const int IOX2_SERVICE_TYPE_LOCAL = 0;
 const int IOX2_SERVICE_TYPE_IPC = 1;
 
@@ -40,26 +47,34 @@ typedef Iox2SubscriberPtr = Pointer<Iox2Subscriber>;
 typedef Iox2SamplePtr = Pointer<Iox2Sample>;
 typedef Iox2PortFactoryPtr = Pointer<Iox2PortFactory>;
 
-// Node wait functions  
+// Node wait functions
 typedef _IoxNodeWaitC = Int32 Function(Pointer<Pointer<Void>>, Uint64, Uint64);
 typedef _IoxNodeWait = int Function(Pointer<Pointer<Void>>, int, int);
 
-typedef _IoxSubscriberReceiveC = Int32 Function(Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Pointer<Void>>);
-typedef _IoxSubscriberReceive = int Function(Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Pointer<Void>>);
+typedef _IoxSubscriberReceiveC = Int32 Function(
+    Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Pointer<Void>>);
+typedef _IoxSubscriberReceive = int Function(
+    Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Pointer<Void>>);
 
 // Function signatures
 typedef _IoxNodeBuilderNewC = Pointer<Void> Function(Pointer<Void>);
 typedef _IoxNodeBuilderNew = Pointer<Void> Function(Pointer<Void>);
 
-typedef _IoxNodeBuilderCreateC = Int32 Function(Pointer<Void>, Pointer<Void>, Int32, Pointer<Pointer<Void>>);
-typedef _IoxNodeBuilderCreate = int Function(Pointer<Void>, Pointer<Void>, int, Pointer<Pointer<Void>>);
+typedef _IoxNodeBuilderCreateC = Int32 Function(
+    Pointer<Void>, Pointer<Void>, Int32, Pointer<Pointer<Void>>);
+typedef _IoxNodeBuilderCreate = int Function(
+    Pointer<Void>, Pointer<Void>, int, Pointer<Pointer<Void>>);
 
-typedef _IoxNodeServiceBuilderC = Pointer<Void> Function(Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Void>);
-typedef _IoxNodeServiceBuilder = Pointer<Void> Function(Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Void>);
+typedef _IoxNodeServiceBuilderC = Pointer<Void> Function(
+    Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Void>);
+typedef _IoxNodeServiceBuilder = Pointer<Void> Function(
+    Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Void>);
 
-// Service name functions  
-typedef _IoxServiceNameNewC = Int32 Function(Pointer<Void>, Pointer<Utf8>, Size, Pointer<Pointer<Void>>);
-typedef _IoxServiceNameNew = int Function(Pointer<Void>, Pointer<Utf8>, int, Pointer<Pointer<Void>>);
+// Service name functions
+typedef _IoxServiceNameNewC = Int32 Function(
+    Pointer<Void>, Pointer<Utf8>, Size, Pointer<Pointer<Void>>);
+typedef _IoxServiceNameNew = int Function(
+    Pointer<Void>, Pointer<Utf8>, int, Pointer<Pointer<Void>>);
 
 typedef _IoxCastServiceNamePtrC = Pointer<Void> Function(Pointer<Void>);
 typedef _IoxCastServiceNamePtr = Pointer<Void> Function(Pointer<Void>);
@@ -67,35 +82,53 @@ typedef _IoxCastServiceNamePtr = Pointer<Void> Function(Pointer<Void>);
 typedef _IoxServiceBuilderPubSubC = Pointer<Void> Function(Pointer<Void>);
 typedef _IoxServiceBuilderPubSub = Pointer<Void> Function(Pointer<Void>);
 
-typedef _IoxServiceBuilderPubSubSetPayloadTypeDetailsC = Int32 Function(Pointer<Pointer<Void>>, Int32, Pointer<Utf8>, Size, Size, Size);
-typedef _IoxServiceBuilderPubSubSetPayloadTypeDetails = int Function(Pointer<Pointer<Void>>, int, Pointer<Utf8>, int, int, int);
+typedef _IoxServiceBuilderPubSubSetPayloadTypeDetailsC = Int32 Function(
+    Pointer<Pointer<Void>>, Int32, Pointer<Utf8>, Size, Size, Size);
+typedef _IoxServiceBuilderPubSubSetPayloadTypeDetails = int Function(
+    Pointer<Pointer<Void>>, int, Pointer<Utf8>, int, int, int);
 
-typedef _IoxServiceBuilderPubSubOpenOrCreateC = Int32 Function(Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
-typedef _IoxServiceBuilderPubSubOpenOrCreate = int Function(Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
+typedef _IoxServiceBuilderPubSubOpenOrCreateC = Int32 Function(
+    Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
+typedef _IoxServiceBuilderPubSubOpenOrCreate = int Function(
+    Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
 
-typedef _IoxPortFactoryPubSubPublisherBuilderC = Pointer<Void> Function(Pointer<Pointer<Void>>, Pointer<Void>);
-typedef _IoxPortFactoryPubSubPublisherBuilder = Pointer<Void> Function(Pointer<Pointer<Void>>, Pointer<Void>);
+typedef _IoxPortFactoryPubSubPublisherBuilderC = Pointer<Void> Function(
+    Pointer<Pointer<Void>>, Pointer<Void>);
+typedef _IoxPortFactoryPubSubPublisherBuilder = Pointer<Void> Function(
+    Pointer<Pointer<Void>>, Pointer<Void>);
 
-typedef _IoxPortFactoryPublisherBuilderCreateC = Int32 Function(Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
-typedef _IoxPortFactoryPublisherBuilderCreate = int Function(Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
+typedef _IoxPortFactoryPublisherBuilderCreateC = Int32 Function(
+    Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
+typedef _IoxPortFactoryPublisherBuilderCreate = int Function(
+    Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
 
-typedef _IoxPortFactoryPubSubSubscriberBuilderC = Pointer<Void> Function(Pointer<Pointer<Void>>, Pointer<Void>);
-typedef _IoxPortFactoryPubSubSubscriberBuilder = Pointer<Void> Function(Pointer<Pointer<Void>>, Pointer<Void>);
+typedef _IoxPortFactoryPubSubSubscriberBuilderC = Pointer<Void> Function(
+    Pointer<Pointer<Void>>, Pointer<Void>);
+typedef _IoxPortFactoryPubSubSubscriberBuilder = Pointer<Void> Function(
+    Pointer<Pointer<Void>>, Pointer<Void>);
 
-typedef _IoxPortFactorySubscriberBuilderCreateC = Int32 Function(Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
-typedef _IoxPortFactorySubscriberBuilderCreate = int Function(Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
+typedef _IoxPortFactorySubscriberBuilderCreateC = Int32 Function(
+    Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
+typedef _IoxPortFactorySubscriberBuilderCreate = int Function(
+    Pointer<Void>, Pointer<Void>, Pointer<Pointer<Void>>);
 
-typedef _IoxPublisherLoanSliceUninitC = Int32 Function(Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Pointer<Void>>, Size);
-typedef _IoxPublisherLoanSliceUninit = int Function(Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Pointer<Void>>, int);
+typedef _IoxPublisherLoanSliceUninitC = Int32 Function(
+    Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Pointer<Void>>, Size);
+typedef _IoxPublisherLoanSliceUninit = int Function(
+    Pointer<Pointer<Void>>, Pointer<Void>, Pointer<Pointer<Void>>, int);
 
-typedef _IoxSampleMutPayloadMutC = Void Function(Pointer<Pointer<Void>>, Pointer<Pointer<Void>>, Pointer<Void>);
-typedef _IoxSampleMutPayloadMut = void Function(Pointer<Pointer<Void>>, Pointer<Pointer<Void>>, Pointer<Void>);
+typedef _IoxSampleMutPayloadMutC = Void Function(
+    Pointer<Pointer<Void>>, Pointer<Pointer<Void>>, Pointer<Void>);
+typedef _IoxSampleMutPayloadMut = void Function(
+    Pointer<Pointer<Void>>, Pointer<Pointer<Void>>, Pointer<Void>);
 
 typedef _IoxSampleMutSendC = Int32 Function(Pointer<Void>, Pointer<Void>);
 typedef _IoxSampleMutSend = int Function(Pointer<Void>, Pointer<Void>);
 
-typedef _IoxSamplePayloadC = Void Function(Pointer<Pointer<Void>>, Pointer<Pointer<Void>>, Pointer<Void>);
-typedef _IoxSamplePayload = void Function(Pointer<Pointer<Void>>, Pointer<Pointer<Void>>, Pointer<Void>);
+typedef _IoxSamplePayloadC = Void Function(
+    Pointer<Pointer<Void>>, Pointer<Pointer<Void>>, Pointer<Void>);
+typedef _IoxSamplePayload = void Function(
+    Pointer<Pointer<Void>>, Pointer<Pointer<Void>>, Pointer<Void>);
 
 typedef _IoxNodeDropC = Void Function(Pointer<Void>);
 typedef _IoxNodeDrop = void Function(Pointer<Void>);
@@ -117,40 +150,42 @@ class MessageHelper {
     for (int i = 0; i < MESSAGE_STRUCT_SIZE; i++) {
       memory[i] = 0;
     }
-    
+
     final messageBytes = message.codeUnits;
-    final actualLength = messageBytes.length > MESSAGE_MAX_LENGTH ? MESSAGE_MAX_LENGTH : messageBytes.length;
-    
+    final actualLength = messageBytes.length > MESSAGE_MAX_LENGTH
+        ? MESSAGE_MAX_LENGTH
+        : messageBytes.length;
+
     // Write length as first 8 bytes (Uint64)
     final lengthPtr = Pointer<Uint64>.fromAddress(memory.address);
     lengthPtr.value = actualLength;
-    
+
     // Write message data starting from offset 8
     final dataPtr = memory.elementAt(8);
     for (int i = 0; i < actualLength; i++) {
       dataPtr[i] = messageBytes[i];
     }
   }
-  
-  // Read a string message from memory with length prefix  
+
+  // Read a string message from memory with length prefix
   static String readMessage(Pointer<Uint8> memory) {
     // Read length from first 8 bytes
     final lengthPtr = Pointer<Uint64>.fromAddress(memory.address);
     final length = lengthPtr.value;
-    
+
     // Validate length
     if (length > MESSAGE_MAX_LENGTH) {
       throw Exception('Invalid message length: $length');
     }
-    
+
     // Read message data starting from offset 8
     final dataPtr = memory.elementAt(8);
     final messageBytes = <int>[];
-    
+
     for (int i = 0; i < length; i++) {
       messageBytes.add(dataPtr[i]);
     }
-    
+
     return String.fromCharCodes(messageBytes);
   }
 }
@@ -166,8 +201,9 @@ class Iceoryx2 {
       .lookup<NativeFunction<_IoxSubscriberReceiveC>>('iox2_subscriber_receive')
       .asFunction<_IoxSubscriberReceive>();
 
-  // Event-driven node wait method 
-  static int nodeWait(Pointer<Void> node, {int timeoutSecs = 1, int timeoutNsecs = 0}) {
+  // Event-driven node wait method
+  static int nodeWait(Pointer<Void> node,
+      {int timeoutSecs = 1, int timeoutNsecs = 0}) {
     final nodeRef = calloc<Pointer<Void>>();
     nodeRef.value = node;
     try {
@@ -176,18 +212,20 @@ class Iceoryx2 {
       calloc.free(nodeRef);
     }
   }
-  
+
   // Function bindings
   static final _iox2NodeBuilderNew = _lib
       .lookup<NativeFunction<_IoxNodeBuilderNewC>>('iox2_node_builder_new')
       .asFunction<_IoxNodeBuilderNew>();
 
   static final _iox2NodeBuilderCreate = _lib
-      .lookup<NativeFunction<_IoxNodeBuilderCreateC>>('iox2_node_builder_create')
+      .lookup<NativeFunction<_IoxNodeBuilderCreateC>>(
+          'iox2_node_builder_create')
       .asFunction<_IoxNodeBuilderCreate>();
 
   static final _iox2NodeServiceBuilder = _lib
-      .lookup<NativeFunction<_IoxNodeServiceBuilderC>>('iox2_node_service_builder')
+      .lookup<NativeFunction<_IoxNodeServiceBuilderC>>(
+          'iox2_node_service_builder')
       .asFunction<_IoxNodeServiceBuilder>();
 
   static final iox2ServiceNameNew = _lib
@@ -195,43 +233,53 @@ class Iceoryx2 {
       .asFunction<_IoxServiceNameNew>();
 
   static final iox2CastServiceNamePtr = _lib
-      .lookup<NativeFunction<_IoxCastServiceNamePtrC>>('iox2_cast_service_name_ptr')
+      .lookup<NativeFunction<_IoxCastServiceNamePtrC>>(
+          'iox2_cast_service_name_ptr')
       .asFunction<_IoxCastServiceNamePtr>();
 
   static final iox2ServiceBuilderPubSub = _lib
-      .lookup<NativeFunction<_IoxServiceBuilderPubSubC>>('iox2_service_builder_pub_sub')
+      .lookup<NativeFunction<_IoxServiceBuilderPubSubC>>(
+          'iox2_service_builder_pub_sub')
       .asFunction<_IoxServiceBuilderPubSub>();
 
   static final iox2ServiceBuilderPubSubSetPayloadTypeDetails = _lib
-      .lookup<NativeFunction<_IoxServiceBuilderPubSubSetPayloadTypeDetailsC>>('iox2_service_builder_pub_sub_set_payload_type_details')
+      .lookup<NativeFunction<_IoxServiceBuilderPubSubSetPayloadTypeDetailsC>>(
+          'iox2_service_builder_pub_sub_set_payload_type_details')
       .asFunction<_IoxServiceBuilderPubSubSetPayloadTypeDetails>();
 
   static final iox2ServiceBuilderPubSubOpenOrCreate = _lib
-      .lookup<NativeFunction<_IoxServiceBuilderPubSubOpenOrCreateC>>('iox2_service_builder_pub_sub_open_or_create')
+      .lookup<NativeFunction<_IoxServiceBuilderPubSubOpenOrCreateC>>(
+          'iox2_service_builder_pub_sub_open_or_create')
       .asFunction<_IoxServiceBuilderPubSubOpenOrCreate>();
 
   static final iox2PortFactoryPubSubPublisherBuilder = _lib
-      .lookup<NativeFunction<_IoxPortFactoryPubSubPublisherBuilderC>>('iox2_port_factory_pub_sub_publisher_builder')
+      .lookup<NativeFunction<_IoxPortFactoryPubSubPublisherBuilderC>>(
+          'iox2_port_factory_pub_sub_publisher_builder')
       .asFunction<_IoxPortFactoryPubSubPublisherBuilder>();
 
   static final _iox2PortFactoryPublisherBuilderCreate = _lib
-      .lookup<NativeFunction<_IoxPortFactoryPublisherBuilderCreateC>>('iox2_port_factory_publisher_builder_create')
+      .lookup<NativeFunction<_IoxPortFactoryPublisherBuilderCreateC>>(
+          'iox2_port_factory_publisher_builder_create')
       .asFunction<_IoxPortFactoryPublisherBuilderCreate>();
 
   static final iox2PortFactoryPubSubSubscriberBuilder = _lib
-      .lookup<NativeFunction<_IoxPortFactoryPubSubSubscriberBuilderC>>('iox2_port_factory_pub_sub_subscriber_builder')
+      .lookup<NativeFunction<_IoxPortFactoryPubSubSubscriberBuilderC>>(
+          'iox2_port_factory_pub_sub_subscriber_builder')
       .asFunction<_IoxPortFactoryPubSubSubscriberBuilder>();
 
   static final _iox2PortFactorySubscriberBuilderCreate = _lib
-      .lookup<NativeFunction<_IoxPortFactorySubscriberBuilderCreateC>>('iox2_port_factory_subscriber_builder_create')
+      .lookup<NativeFunction<_IoxPortFactorySubscriberBuilderCreateC>>(
+          'iox2_port_factory_subscriber_builder_create')
       .asFunction<_IoxPortFactorySubscriberBuilderCreate>();
 
   static final _iox2PublisherLoanSliceUninit = _lib
-      .lookup<NativeFunction<_IoxPublisherLoanSliceUninitC>>('iox2_publisher_loan_slice_uninit')
+      .lookup<NativeFunction<_IoxPublisherLoanSliceUninitC>>(
+          'iox2_publisher_loan_slice_uninit')
       .asFunction<_IoxPublisherLoanSliceUninit>();
 
   static final _iox2SampleMutPayloadMut = _lib
-      .lookup<NativeFunction<_IoxSampleMutPayloadMutC>>('iox2_sample_mut_payload_mut')
+      .lookup<NativeFunction<_IoxSampleMutPayloadMutC>>(
+          'iox2_sample_mut_payload_mut')
       .asFunction<_IoxSampleMutPayloadMut>();
 
   static final _iox2SampleMutSend = _lib
@@ -269,7 +317,8 @@ class Iceoryx2 {
     print('[FFI] Building node...');
     final nodePtr = calloc<Pointer<Void>>();
     try {
-      final result = _iox2NodeBuilderCreate(nodeBuilder, nullptr, IOX2_SERVICE_TYPE_IPC, nodePtr);
+      final result = _iox2NodeBuilderCreate(
+          nodeBuilder, nullptr, IOX2_SERVICE_TYPE_IPC, nodePtr);
       if (result != IOX2_OK) {
         throw Exception('Failed to create node: $result');
       }
@@ -282,192 +331,205 @@ class Iceoryx2 {
 
   static Pointer<Void> createPublisher(Pointer<Void> node, String serviceName) {
     print('[FFI] Creating publisher for service: "$serviceName"');
-    
+
     // 1. Create service name
     final serviceNamePtr = serviceName.toNativeUtf8();
     final serviceNameHandlePtr = calloc<Pointer<Void>>();
-    
+
     try {
-      final result = iox2ServiceNameNew(nullptr, serviceNamePtr, serviceName.length, serviceNameHandlePtr);
+      final result = iox2ServiceNameNew(
+          nullptr, serviceNamePtr, serviceName.length, serviceNameHandlePtr);
       if (result != IOX2_OK) {
         throw Exception('Failed to create service name: $result');
       }
-      
+
       final serviceNameHandle = serviceNameHandlePtr.value;
-      
+
       // 2. Cast service name to pointer
       final serviceNameCastedPtr = iox2CastServiceNamePtr(serviceNameHandle);
-      
+
       // 3. Create service builder (pass nullptr to let it allocate)
       final nodeHandlePtr = calloc<Pointer<Void>>();
       nodeHandlePtr.value = node;
-      
-      final serviceBuilder = _iox2NodeServiceBuilder(nodeHandlePtr, nullptr, serviceNameCastedPtr);
+
+      final serviceBuilder =
+          _iox2NodeServiceBuilder(nodeHandlePtr, nullptr, serviceNameCastedPtr);
       if (serviceBuilder == nullptr) {
         calloc.free(nodeHandlePtr);
         throw Exception('Failed to create service builder');
       }
-      
+
       calloc.free(nodeHandlePtr);
-      
+
       // 4. Transform to pub-sub service builder
       final pubSubServiceBuilder = iox2ServiceBuilderPubSub(serviceBuilder);
       if (pubSubServiceBuilder == nullptr) {
         throw Exception('Failed to create pub-sub service builder');
       }
-      
-      // 5. Set payload type details for our message structure 
+
+      // 5. Set payload type details for our message structure
       final payloadTypeName = "DartMessage".toNativeUtf8();
       final pubSubBuilderRef = calloc<Pointer<Void>>();
       pubSubBuilderRef.value = pubSubServiceBuilder;
-      
+
       final payloadTypeResult = iox2ServiceBuilderPubSubSetPayloadTypeDetails(
-        pubSubBuilderRef,
-        IOX2_TYPE_VARIANT_FIXED_SIZE,
-        payloadTypeName,
-        "DartMessage".length,
-        MESSAGE_STRUCT_SIZE,
-        8 // 8-byte alignment for our message structure
-      );
-      
+          pubSubBuilderRef,
+          IOX2_TYPE_VARIANT_FIXED_SIZE,
+          payloadTypeName,
+          "DartMessage".length,
+          MESSAGE_STRUCT_SIZE,
+          8 // 8-byte alignment for our message structure
+          );
+
       calloc.free(pubSubBuilderRef);
       calloc.free(payloadTypeName);
-      
+
       if (payloadTypeResult != IOX2_OK) {
-        throw Exception('Failed to set payload type details: $payloadTypeResult');
+        throw Exception(
+            'Failed to set payload type details: $payloadTypeResult');
       }
-      
-      print('[FFI] Set payload type: DartMessage, size=$MESSAGE_STRUCT_SIZE, alignment=8');
-      
+
+      print(
+          '[FFI] Set payload type: DartMessage, size=$MESSAGE_STRUCT_SIZE, alignment=8');
+
       // 6. Open or create service
       final servicePtr = calloc<Pointer<Void>>();
-      final serviceResult = iox2ServiceBuilderPubSubOpenOrCreate(pubSubServiceBuilder, nullptr, servicePtr);
+      final serviceResult = iox2ServiceBuilderPubSubOpenOrCreate(
+          pubSubServiceBuilder, nullptr, servicePtr);
       if (serviceResult != IOX2_OK) {
         calloc.free(servicePtr);
         throw Exception('Failed to open or create service: $serviceResult');
       }
-      
+
       final service = servicePtr.value;
       calloc.free(servicePtr);
-      
+
       // 7. Create publisher builder
       final serviceRef = calloc<Pointer<Void>>();
       serviceRef.value = service;
-      final publisherBuilder = iox2PortFactoryPubSubPublisherBuilder(serviceRef, nullptr);
+      final publisherBuilder =
+          iox2PortFactoryPubSubPublisherBuilder(serviceRef, nullptr);
       calloc.free(serviceRef);
-      
+
       if (publisherBuilder == nullptr) {
         throw Exception('Failed to create publisher builder');
       }
-      
+
       // 8. Create publisher
       final publisherPtr = calloc<Pointer<Void>>();
-      final publisherResult = _iox2PortFactoryPublisherBuilderCreate(publisherBuilder, nullptr, publisherPtr);
+      final publisherResult = _iox2PortFactoryPublisherBuilderCreate(
+          publisherBuilder, nullptr, publisherPtr);
       if (publisherResult != IOX2_OK) {
         calloc.free(publisherPtr);
         throw Exception('Failed to create publisher: $publisherResult');
       }
-      
+
       print('[FFI] Publisher created successfully');
       return publisherPtr.value;
-      
     } finally {
       calloc.free(serviceNameHandlePtr);
       calloc.free(serviceNamePtr);
     }
   }
 
-  static Pointer<Void> createSubscriber(Pointer<Void> node, String serviceName) {
+  static Pointer<Void> createSubscriber(
+      Pointer<Void> node, String serviceName) {
     print('[FFI] Creating subscriber for service: "$serviceName"');
-    
+
     // 1. Create service name
     final serviceNamePtr = serviceName.toNativeUtf8();
     final serviceNameHandlePtr = calloc<Pointer<Void>>();
-    
+
     try {
-      final result = iox2ServiceNameNew(nullptr, serviceNamePtr, serviceName.length, serviceNameHandlePtr);
+      final result = iox2ServiceNameNew(
+          nullptr, serviceNamePtr, serviceName.length, serviceNameHandlePtr);
       if (result != IOX2_OK) {
         throw Exception('Failed to create service name: $result');
       }
-      
+
       final serviceNameHandle = serviceNameHandlePtr.value;
-      
+
       // 2. Cast service name to pointer
       final serviceNameCastedPtr = iox2CastServiceNamePtr(serviceNameHandle);
-      
+
       // 3. Create service builder (pass nullptr to let it allocate)
       final nodeHandlePtr = calloc<Pointer<Void>>();
       nodeHandlePtr.value = node;
-      
-      final serviceBuilder = _iox2NodeServiceBuilder(nodeHandlePtr, nullptr, serviceNameCastedPtr);
+
+      final serviceBuilder =
+          _iox2NodeServiceBuilder(nodeHandlePtr, nullptr, serviceNameCastedPtr);
       if (serviceBuilder == nullptr) {
         calloc.free(nodeHandlePtr);
         throw Exception('Failed to create service builder');
       }
-      
+
       calloc.free(nodeHandlePtr);
-      
+
       // 4. Transform to pub-sub service builder
       final pubSubServiceBuilder = iox2ServiceBuilderPubSub(serviceBuilder);
       if (pubSubServiceBuilder == nullptr) {
         throw Exception('Failed to create pub-sub service builder');
       }
-      
-      // 5. Set payload type details for our message structure 
+
+      // 5. Set payload type details for our message structure
       final payloadTypeName = "DartMessage".toNativeUtf8();
       final pubSubBuilderRef = calloc<Pointer<Void>>();
       pubSubBuilderRef.value = pubSubServiceBuilder;
-      
+
       final payloadTypeResult = iox2ServiceBuilderPubSubSetPayloadTypeDetails(
-        pubSubBuilderRef,
-        IOX2_TYPE_VARIANT_FIXED_SIZE,
-        payloadTypeName,
-        "DartMessage".length,
-        MESSAGE_STRUCT_SIZE,
-        8 // 8-byte alignment for our message structure
-      );
-      
+          pubSubBuilderRef,
+          IOX2_TYPE_VARIANT_FIXED_SIZE,
+          payloadTypeName,
+          "DartMessage".length,
+          MESSAGE_STRUCT_SIZE,
+          8 // 8-byte alignment for our message structure
+          );
+
       calloc.free(pubSubBuilderRef);
       calloc.free(payloadTypeName);
-      
+
       if (payloadTypeResult != IOX2_OK) {
-        throw Exception('Failed to set payload type details: $payloadTypeResult');
+        throw Exception(
+            'Failed to set payload type details: $payloadTypeResult');
       }
-      
-      print('[FFI] Set payload type: DartMessage, size=$MESSAGE_STRUCT_SIZE, alignment=8');
-      
+
+      print(
+          '[FFI] Set payload type: DartMessage, size=$MESSAGE_STRUCT_SIZE, alignment=8');
+
       // 6. Open or create service
       final servicePtr = calloc<Pointer<Void>>();
-      final serviceResult = iox2ServiceBuilderPubSubOpenOrCreate(pubSubServiceBuilder, nullptr, servicePtr);
+      final serviceResult = iox2ServiceBuilderPubSubOpenOrCreate(
+          pubSubServiceBuilder, nullptr, servicePtr);
       if (serviceResult != IOX2_OK) {
         calloc.free(servicePtr);
         throw Exception('Failed to open or create service: $serviceResult');
       }
-      
+
       final service = servicePtr.value;
       calloc.free(servicePtr);
-      
+
       // 7. Create subscriber builder
       final serviceRef = calloc<Pointer<Void>>();
       serviceRef.value = service;
-      final subscriberBuilder = iox2PortFactoryPubSubSubscriberBuilder(serviceRef, nullptr);
+      final subscriberBuilder =
+          iox2PortFactoryPubSubSubscriberBuilder(serviceRef, nullptr);
       calloc.free(serviceRef);
-      
+
       if (subscriberBuilder == nullptr) {
         throw Exception('Failed to create subscriber builder');
       }
-      
+
       // 8. Create subscriber
       final subscriberPtr = calloc<Pointer<Void>>();
-      final subscriberResult = _iox2PortFactorySubscriberBuilderCreate(subscriberBuilder, nullptr, subscriberPtr);
+      final subscriberResult = _iox2PortFactorySubscriberBuilderCreate(
+          subscriberBuilder, nullptr, subscriberPtr);
       if (subscriberResult != IOX2_OK) {
         calloc.free(subscriberPtr);
         throw Exception('Failed to create subscriber: $subscriberResult');
       }
-      
+
       print('[FFI] Subscriber created successfully');
       return subscriberPtr.value;
-      
     } finally {
       calloc.free(serviceNameHandlePtr);
       calloc.free(serviceNamePtr);
@@ -478,32 +540,33 @@ class Iceoryx2 {
     final publisherRef = calloc<Pointer<Void>>();
     final samplePtr = calloc<Pointer<Void>>();
     final payloadPtr = calloc<Pointer<Void>>();
-    
+
     publisherRef.value = publisher;
-    
+
     try {
       print('[FFI] Publishing message: "$message" (${message.length} chars)');
-      
+
       // Loan a single element (our DartMessage structure)
-      final result = _iox2PublisherLoanSliceUninit(publisherRef, nullptr, samplePtr, 1);
+      final result =
+          _iox2PublisherLoanSliceUninit(publisherRef, nullptr, samplePtr, 1);
       if (result != IOX2_OK) {
         throw Exception('Failed to loan sample: $result');
       }
 
       final sample = samplePtr.value;
-      
+
       // Get mutable payload from sample
       _iox2SampleMutPayloadMut(samplePtr, payloadPtr, nullptr);
       final payload = payloadPtr.value;
-      
+
       if (payload == nullptr) {
         throw Exception('Failed to get payload from sample');
       }
-      
+
       // Write message using our structured format
       final payloadData = payload.cast<Uint8>();
       MessageHelper.writeMessage(payloadData, message);
-      
+
       print('[FFI] Message written to DartMessage structure');
 
       // Send the sample
@@ -511,7 +574,7 @@ class Iceoryx2 {
       if (sendResult != IOX2_OK) {
         throw Exception('Failed to send message: $sendResult');
       }
-      
+
       print('[FFI] Message sent successfully');
     } finally {
       calloc.free(publisherRef);
@@ -523,9 +586,9 @@ class Iceoryx2 {
   static String? receive(Pointer<Void> subscriber) {
     final subscriberRef = calloc<Pointer<Void>>();
     final samplePtr = calloc<Pointer<Void>>();
-    
+
     subscriberRef.value = subscriber;
-    
+
     try {
       final result = _iox2SubscriberReceive(subscriberRef, nullptr, samplePtr);
       if (result != IOX2_OK) {
@@ -536,25 +599,25 @@ class Iceoryx2 {
       if (sample == nullptr) {
         return null; // No sample available
       }
-      
+
       // Get payload from sample using the correct API
       final payloadPtr = calloc<Pointer<Void>>();
       _iox2SamplePayload(samplePtr, payloadPtr, nullptr);
       final payload = payloadPtr.value;
-      
+
       if (payload == nullptr) {
         calloc.free(payloadPtr);
         _iox2SampleDrop(sample);
         return null;
       }
-      
+
       try {
         // Read message using our structured format
         final payloadData = payload.cast<Uint8>();
         final message = MessageHelper.readMessage(payloadData);
-        
+
         print('[FFI] Successfully decoded DartMessage: "$message"');
-        
+
         // Clean up resources
         calloc.free(payloadPtr);
         _iox2SampleDrop(sample);
@@ -571,7 +634,8 @@ class Iceoryx2 {
     }
   }
 
-  static void cleanup(Pointer<Void> node, {Pointer<Void>? publisher, Pointer<Void>? subscriber}) {
+  static void cleanup(Pointer<Void> node,
+      {Pointer<Void>? publisher, Pointer<Void>? subscriber}) {
     if (publisher != null) {
       _iox2PublisherDrop(publisher);
     }

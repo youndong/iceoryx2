@@ -58,7 +58,7 @@ class _PublisherScreenState extends State<PublisherScreen> {
       print('[Publisher] Creating iceoryx2 node...');
       _node = Iceoryx2.createNode();
       print('[Publisher] Node created successfully');
-      
+
       // Create publisher for service "flutter_example"
       print('[Publisher] Creating publisher for service "flutter_example"...');
       _publisher = Iceoryx2.createPublisher(_node!, "flutter_example");
@@ -95,7 +95,8 @@ class _PublisherScreenState extends State<PublisherScreen> {
       if (success) {
         print('[Publisher] Message published successfully');
         setState(() {
-          _sentMessages.insert(0, '${DateTime.now().toIso8601String()}: $message');
+          _sentMessages.insert(
+              0, '${DateTime.now().toIso8601String()}: $message');
           _status = 'Published: $message';
         });
         _messageController.clear();
@@ -123,14 +124,15 @@ class _PublisherScreenState extends State<PublisherScreen> {
       _autoPublishTimer = Timer.periodic(const Duration(seconds: 2), (timer) {
         _messageCounter++;
         final autoMessage = 'Auto message #$_messageCounter';
-        
+
         print('[Publisher] Auto-publishing: "$autoMessage"');
         try {
           final success = Iceoryx2.publish(_publisher!, autoMessage);
           if (success) {
             print('[Publisher] Auto-message published successfully');
             setState(() {
-              _sentMessages.insert(0, '${DateTime.now().toIso8601String()}: $autoMessage');
+              _sentMessages.insert(
+                  0, '${DateTime.now().toIso8601String()}: $autoMessage');
               _status = 'Auto-published: $autoMessage';
             });
           } else {
@@ -154,7 +156,7 @@ class _PublisherScreenState extends State<PublisherScreen> {
     print('[Publisher] Starting cleanup...');
     _autoPublishTimer?.cancel();
     _messageController.dispose();
-    
+
     // Clean up iceoryx2 resources
     if (_publisher != null) {
       print('[Publisher] Dropping publisher...');
@@ -166,7 +168,7 @@ class _PublisherScreenState extends State<PublisherScreen> {
       Iceoryx2.dropNode(_node!);
       print('[Publisher] Node dropped');
     }
-    
+
     print('[Publisher] Cleanup completed');
     super.dispose();
   }
@@ -243,10 +245,12 @@ class _PublisherScreenState extends State<PublisherScreen> {
                         ElevatedButton(
                           onPressed: _isInitialized ? _toggleAutoPublish : null,
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: _autoPublish ? Colors.red : Colors.green,
+                            backgroundColor:
+                                _autoPublish ? Colors.red : Colors.green,
                             foregroundColor: Colors.white,
                           ),
-                          child: Text(_autoPublish ? 'Stop Auto' : 'Start Auto'),
+                          child:
+                              Text(_autoPublish ? 'Stop Auto' : 'Start Auto'),
                         ),
                       ],
                     ),
@@ -292,7 +296,8 @@ class _PublisherScreenState extends State<PublisherScreen> {
                                 itemCount: _sentMessages.length,
                                 itemBuilder: (context, index) {
                                   return Card(
-                                    margin: const EdgeInsets.symmetric(vertical: 2),
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 2),
                                     child: ListTile(
                                       dense: true,
                                       leading: const Icon(Icons.send, size: 16),

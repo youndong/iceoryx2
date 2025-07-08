@@ -56,7 +56,7 @@ class AppSelectorScreen extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 32),
-              
+
               // Publisher button
               SizedBox(
                 width: double.infinity,
@@ -86,9 +86,9 @@ class AppSelectorScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 16),
-              
+
               // Subscriber button (Event-Driven)
               SizedBox(
                 width: double.infinity,
@@ -113,14 +113,15 @@ class AppSelectorScreen extends StatelessWidget {
                     children: [
                       Icon(Icons.flash_on, size: 32),
                       SizedBox(height: 8),
-                      Text('Subscriber (Event-Driven)', style: TextStyle(fontSize: 18)),
+                      Text('Subscriber (Event-Driven)',
+                          style: TextStyle(fontSize: 18)),
                     ],
                   ),
                 ),
               ),
-              
+
               const SizedBox(height: 32),
-              
+
               Card(
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),

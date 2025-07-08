@@ -57,9 +57,10 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
       print('[Subscriber] Creating iceoryx2 node...');
       _node = Iceoryx2.createNode();
       print('[Subscriber] Node created successfully');
-      
+
       // Create subscriber for service "flutter_example"
-      print('[Subscriber] Creating subscriber for service "flutter_example"...');
+      print(
+          '[Subscriber] Creating subscriber for service "flutter_example"...');
       _subscriber = Iceoryx2.createSubscriber(_node!, "flutter_example");
       print('[Subscriber] Subscriber created successfully');
 
@@ -78,7 +79,8 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
 
   void _startListening() async {
     if (!_isInitialized || _subscriber == null) {
-      print('[Subscriber] Cannot start listening: not initialized or subscriber is null');
+      print(
+          '[Subscriber] Cannot start listening: not initialized or subscriber is null');
       return;
     }
 
@@ -100,7 +102,8 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
     _waitsetReceivePort!.listen((message) {
       if (message is String) {
         setState(() {
-          _receivedMessages.insert(0, '${DateTime.now().toIso8601String()}: $message');
+          _receivedMessages.insert(
+              0, '${DateTime.now().toIso8601String()}: $message');
           _status = 'Received: $message';
         });
       }
@@ -132,7 +135,8 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
       if (message != null) {
         print('[Subscriber] Found message: "$message"');
         setState(() {
-          _receivedMessages.insert(0, '${DateTime.now().toIso8601String()}: $message');
+          _receivedMessages.insert(
+              0, '${DateTime.now().toIso8601String()}: $message');
           _status = 'Received: $message';
         });
       } else {
@@ -195,12 +199,14 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
                     Row(
                       children: [
                         Icon(
-                          _isInitialized ? 
-                            (_isListening ? Icons.play_arrow : Icons.check_circle) : 
-                            Icons.error,
-                          color: _isInitialized ? 
-                            (_isListening ? Colors.orange : Colors.green) : 
-                            Colors.red,
+                          _isInitialized
+                              ? (_isListening
+                                  ? Icons.play_arrow
+                                  : Icons.check_circle)
+                              : Icons.error,
+                          color: _isInitialized
+                              ? (_isListening ? Colors.orange : Colors.green)
+                              : Colors.red,
                         ),
                         const SizedBox(width: 8),
                         Expanded(child: Text(_status)),
@@ -227,7 +233,9 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
                     Row(
                       children: [
                         ElevatedButton(
-                          onPressed: _isInitialized && !_isListening ? _startListening : null,
+                          onPressed: _isInitialized && !_isListening
+                              ? _startListening
+                              : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
@@ -245,7 +253,9 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
-                          onPressed: _isInitialized && !_isListening ? _checkOnce : null,
+                          onPressed: _isInitialized && !_isListening
+                              ? _checkOnce
+                              : null,
                           child: const Text('Check Once'),
                         ),
                       ],
@@ -292,10 +302,12 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
                                 itemCount: _receivedMessages.length,
                                 itemBuilder: (context, index) {
                                   return Card(
-                                    margin: const EdgeInsets.symmetric(vertical: 2),
+                                    margin:
+                                        const EdgeInsets.symmetric(vertical: 2),
                                     child: ListTile(
                                       dense: true,
-                                      leading: const Icon(Icons.inbox, size: 16),
+                                      leading:
+                                          const Icon(Icons.inbox, size: 16),
                                       title: Text(
                                         _receivedMessages[index],
                                         style: const TextStyle(fontSize: 12),
@@ -320,7 +332,8 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
 class _WaitSetIsolateArgs {
   final SendPort sendPort;
   final int subscriberAddress;
-  _WaitSetIsolateArgs({required this.sendPort, required this.subscriberAddress});
+  _WaitSetIsolateArgs(
+      {required this.sendPort, required this.subscriberAddress});
 }
 
 void _waitsetIsolateEntry(_WaitSetIsolateArgs args) {
@@ -334,5 +347,4 @@ void _waitsetIsolateEntry(_WaitSetIsolateArgs args) {
       args.sendPort.send(msg);
     }
   }
-}
 }
