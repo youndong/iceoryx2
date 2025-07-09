@@ -1,7 +1,6 @@
-import 'dart:isolate';
-import 'dart:ffi';
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'iceoryx2_bindings.dart';
+import 'iceoryx2.dart';
 
 void main() {
   runApp(const SubscriberApp());
@@ -31,14 +30,13 @@ class SubscriberScreen extends StatefulWidget {
 }
 
 class _SubscriberScreenState extends State<SubscriberScreen> {
-  Pointer<Void>? _node;
-  Pointer<Void>? _subscriber;
+  Node? _node;
+  Subscriber? _subscriber;
   final List<String> _receivedMessages = [];
   bool _isInitialized = false;
   bool _isListening = false;
   String _status = 'Not initialized';
-  Isolate? _waitsetIsolate;
-  ReceivePort? _waitsetReceivePort;
+  StreamSubscription<Message>? _messageSubscription;
 
   @override
   void initState() {
@@ -55,98 +53,102 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
 
       // Create node
       print('[Subscriber] Creating iceoryx2 node...');
-      _node = Iceoryx2.createNode();
-      print('[Subscriber] Node created successfully');
+      _node = Node('iox2-flutter-subscriber');
+      print('[Subscriber] ✓ Node created successfully');
 
       // Create subscriber for service "flutter_example"
-      print(
-          '[Subscriber] Creating subscriber for service "flutter_example"...');
-      _subscriber = Iceoryx2.createSubscriber(_node!, "flutter_example");
-      print('[Subscriber] Subscriber created successfully');
+      print('[Subscriber] Creating subscriber for service "flutter_example"...');
+      _subscriber = _node!.subscriber('flutter_example');
+      print('[Subscriber] ✓ Subscriber created successfully');
 
       setState(() {
         _isInitialized = true;
-        _status = 'Ready to receive';
+        _status = 'Ready to receive messages';
       });
-      print('[Subscriber] Initialization completed successfully');
+      print('[Subscriber] ✓ Initialization completed successfully');
     } catch (e) {
-      print('[Subscriber] Initialization failed: $e');
+      print('[Subscriber] ✗ Initialization failed: $e');
       setState(() {
         _status = 'Error: $e';
       });
     }
   }
 
-  void _startListening() async {
+  void _startListening() {
     if (!_isInitialized || _subscriber == null) {
-      print(
-          '[Subscriber] Cannot start listening: not initialized or subscriber is null');
+      print('[Subscriber] Cannot start listening: not initialized or subscriber is null');
       return;
     }
 
-    print('[Subscriber] Starting WaitSet-based message listening...');
+    print('[Subscriber] Starting event-driven message listening...');
     setState(() {
       _isListening = true;
-      _status = 'WaitSet listening (CPU efficient)';
+      _status = 'Listening for messages...';
     });
 
-    _waitsetReceivePort = ReceivePort();
-    _waitsetIsolate = await Isolate.spawn<_WaitSetIsolateArgs>(
-      _waitsetIsolateEntry,
-      _WaitSetIsolateArgs(
-        sendPort: _waitsetReceivePort!.sendPort,
-        subscriberAddress: _subscriber!.address,
-      ),
-    );
-
-    _waitsetReceivePort!.listen((message) {
-      if (message is String) {
+    _messageSubscription = _subscriber!.messages.listen(
+      (message) {
+        print('[Subscriber] ✓ Received message: "${message.content}" from ${message.sender}');
         setState(() {
           _receivedMessages.insert(
-              0, '${DateTime.now().toIso8601String()}: $message');
-          _status = 'Received: $message';
+            0, 
+            '${message.timestamp.toIso8601String()}: ${message.content} (from: ${message.sender})'
+          );
+          _status = 'Received: ${message.content}';
         });
-      }
-    });
+      },
+      onError: (error) {
+        print('[Subscriber] ✗ Error in message stream: $error');
+        setState(() {
+          _status = 'Error receiving: $error';
+        });
+      },
+      onDone: () {
+        print('[Subscriber] Message stream closed');
+        setState(() {
+          _isListening = false;
+          _status = 'Message stream closed';
+        });
+      },
+    );
   }
 
   void _stopListening() {
-    print('[Subscriber] Stopping WaitSet listener...');
+    print('[Subscriber] Stopping message listener...');
     setState(() {
       _isListening = false;
-      _status = 'Stopped WaitSet listening';
+      _status = 'Stopped listening';
     });
-    _waitsetIsolate?.kill(priority: Isolate.immediate);
-    _waitsetIsolate = null;
-    _waitsetReceivePort?.close();
-    _waitsetReceivePort = null;
-    print('[Subscriber] WaitSet listener stopped');
+    _messageSubscription?.cancel();
+    _messageSubscription = null;
   }
 
-  void _checkOnce() {
+  void _tryReceiveOnce() {
     if (!_isInitialized || _subscriber == null) {
-      print('[Subscriber] Cannot check: not initialized or subscriber is null');
+      print('[Subscriber] Cannot receive: not initialized or subscriber is null');
       return;
     }
 
-    print('[Subscriber] Checking for messages once...');
+    print('[Subscriber] Trying to receive one message...');
     try {
-      final message = Iceoryx2.receive(_subscriber!);
+      final message = _subscriber!.tryReceive();
       if (message != null) {
-        print('[Subscriber] Found message: "$message"');
+        print('[Subscriber] ✓ Received message: "${message.content}" from ${message.sender}');
         setState(() {
           _receivedMessages.insert(
-              0, '${DateTime.now().toIso8601String()}: $message');
-          _status = 'Received: $message';
+            0, 
+            '${message.timestamp.toIso8601String()}: ${message.content} (from: ${message.sender})'
+          );
+          _status = 'Manually received: ${message.content}';
         });
       } else {
-        print('[Subscriber] No messages available');
+        print('[Subscriber] No message available');
         setState(() {
-          _status = 'No messages available';
+          _status = 'No message available';
         });
       }
     } catch (e) {
-      print('[Subscriber] Error checking for messages: $e');
+      print('[Subscriber] ✗ Error receiving message: $e');
       setState(() {
         _status = 'Error receiving: $e';
       });
@@ -156,19 +158,21 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
   @override
   void dispose() {
     print('[Subscriber] Starting cleanup...');
-    _stopListening();
+    _messageSubscription?.cancel();
+
     // Clean up iceoryx2 resources
     if (_subscriber != null) {
-      print('[Subscriber] Dropping subscriber...');
-      Iceoryx2.dropSubscriber(_subscriber!);
-      print('[Subscriber] Subscriber dropped');
+      print('[Subscriber] Closing subscriber...');
+      _subscriber!.close();
+      print('[Subscriber] ✓ Subscriber closed');
     }
     if (_node != null) {
-      print('[Subscriber] Dropping node...');
-      Iceoryx2.dropNode(_node!);
-      print('[Subscriber] Node dropped');
+      print('[Subscriber] Closing node...');
+      _node!.close();
+      print('[Subscriber] ✓ Node closed');
     }
-    print('[Subscriber] Cleanup completed');
+
+    print('[Subscriber] ✓ Cleanup completed');
     super.dispose();
   }
 
@@ -199,14 +203,8 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
                     Row(
                       children: [
                         Icon(
-                          _isInitialized
-                              ? (_isListening
-                                  ? Icons.play_arrow
-                                  : Icons.check_circle)
-                              : Icons.error,
-                          color: _isInitialized
-                              ? (_isListening ? Colors.orange : Colors.green)
-                              : Colors.red,
+                          _isInitialized ? Icons.check_circle : Icons.error,
+                          color: _isInitialized ? Colors.green : Colors.red,
                         ),
                         const SizedBox(width: 8),
                         Expanded(child: Text(_status)),
@@ -226,21 +224,19 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Controls',
+                      'Message Receiving',
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
                     Row(
                       children: [
                         ElevatedButton(
-                          onPressed: _isInitialized && !_isListening
-                              ? _startListening
-                              : null,
+                          onPressed: _isInitialized && !_isListening ? _startListening : null,
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
                             foregroundColor: Colors.white,
                           ),
-                          child: const Text('Start Event-Driven'),
+                          child: const Text('Start Listening'),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
@@ -249,15 +245,24 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
                           ),
-                          child: const Text('Stop Event-Driven'),
+                          child: const Text('Stop Listening'),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton(
-                          onPressed: _isInitialized && !_isListening
-                              ? _checkOnce
-                              : null,
-                          child: const Text('Check Once'),
+                          onPressed: _isInitialized && !_isListening ? _tryReceiveOnce : null,
+                          child: const Text('Try Receive Once'),
                         ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          _isListening ? Icons.radio_button_checked : Icons.radio_button_off,
+                          color: _isListening ? Colors.green : Colors.grey,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(_isListening ? 'Actively listening' : 'Not listening'),
                       ],
                     ),
                   ],
@@ -302,12 +307,10 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
                                 itemCount: _receivedMessages.length,
                                 itemBuilder: (context, index) {
                                   return Card(
-                                    margin:
-                                        const EdgeInsets.symmetric(vertical: 2),
+                                    margin: const EdgeInsets.symmetric(vertical: 2),
                                     child: ListTile(
                                       dense: true,
-                                      leading:
-                                          const Icon(Icons.inbox, size: 16),
+                                      leading: const Icon(Icons.message, size: 16),
                                       title: Text(
                                         _receivedMessages[index],
                                         style: const TextStyle(fontSize: 12),
@@ -326,25 +329,5 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
         ),
       ),
     );
-  }
-}
-
-class _WaitSetIsolateArgs {
-  final SendPort sendPort;
-  final int subscriberAddress;
-  _WaitSetIsolateArgs(
-      {required this.sendPort, required this.subscriberAddress});
-}
-
-void _waitsetIsolateEntry(_WaitSetIsolateArgs args) {
-  final Pointer<Void> sub = Pointer.fromAddress(args.subscriberAddress);
-  final waitset = Iceoryx2.createWaitSet();
-  Iceoryx2.attachSubscriberToWaitSet(waitset, sub);
-  while (true) {
-    Iceoryx2.waitForEvent(waitset); // 이벤트 발생 시까지 블록
-    final msg = Iceoryx2.receive(sub);
-    if (msg != null) {
-      args.sendPort.send(msg);
-    }
   }
 }

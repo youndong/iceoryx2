@@ -1,7 +1,6 @@
 import 'dart:async';
-import 'dart:ffi';
 import 'package:flutter/material.dart';
-import 'iceoryx2_bindings.dart';
+import 'iceoryx2.dart';
 
 void main() {
   runApp(const PublisherApp());
@@ -31,8 +30,8 @@ class PublisherScreen extends StatefulWidget {
 }
 
 class _PublisherScreenState extends State<PublisherScreen> {
-  Pointer<Void>? _node;
-  Pointer<Void>? _publisher;
+  Node? _node;
+  Publisher? _publisher;
   final TextEditingController _messageController = TextEditingController();
   final List<String> _sentMessages = [];
   bool _isInitialized = false;
@@ -56,13 +55,13 @@ class _PublisherScreenState extends State<PublisherScreen> {
 
       // Create node
       print('[Publisher] Creating iceoryx2 node...');
-      _node = Iceoryx2.createNode();
-      print('[Publisher] Node created successfully');
+      _node = Node('iox2-flutter-publisher');
+      print('[Publisher] ✓ Node created successfully');
 
       // Create publisher for service "flutter_example"
       print('[Publisher] Creating publisher for service "flutter_example"...');
-      _publisher = Iceoryx2.createPublisher(_node!, "flutter_example");
-      print('[Publisher] Publisher created successfully');
+      _publisher = _node!.publisher('flutter_example');
+      print('[Publisher] ✓ Publisher created successfully');
 
       setState(() {
         _isInitialized = true;
@@ -91,23 +90,16 @@ class _PublisherScreenState extends State<PublisherScreen> {
 
     print('[Publisher] Publishing message: "$message"');
     try {
-      final success = Iceoryx2.publish(_publisher!, message);
-      if (success) {
-        print('[Publisher] Message published successfully');
-        setState(() {
-          _sentMessages.insert(
-              0, '${DateTime.now().toIso8601String()}: $message');
-          _status = 'Published: $message';
-        });
-        _messageController.clear();
-      } else {
-        print('[Publisher] Failed to publish message');
-        setState(() {
-          _status = 'Failed to publish message';
-        });
-      }
+      _publisher!.sendText(message, sender: 'Flutter Publisher');
+      print('[Publisher] ✓ Message published successfully');
+      setState(() {
+        _sentMessages.insert(
+            0, '${DateTime.now().toIso8601String()}: $message');
+        _status = 'Published: $message';
+      });
+      _messageController.clear();
     } catch (e) {
-      print('[Publisher] Error publishing message: $e');
+      print('[Publisher] ✗ Failed to publish message: $e');
       setState(() {
         _status = 'Error publishing: $e';
       });
@@ -127,19 +119,15 @@ class _PublisherScreenState extends State<PublisherScreen> {
 
         print('[Publisher] Auto-publishing: "$autoMessage"');
         try {
-          final success = Iceoryx2.publish(_publisher!, autoMessage);
-          if (success) {
-            print('[Publisher] Auto-message published successfully');
-            setState(() {
-              _sentMessages.insert(
-                  0, '${DateTime.now().toIso8601String()}: $autoMessage');
-              _status = 'Auto-published: $autoMessage';
-            });
-          } else {
-            print('[Publisher] Failed to auto-publish message');
-          }
+          _publisher!.sendText(autoMessage, sender: 'Flutter Auto Publisher');
+          print('[Publisher] ✓ Auto-message published successfully');
+          setState(() {
+            _sentMessages.insert(
+                0, '${DateTime.now().toIso8601String()}: $autoMessage');
+            _status = 'Auto-published: $autoMessage';
+          });
         } catch (e) {
-          print('[Publisher] Auto-publish error: $e');
+          print('[Publisher] ✗ Auto-publish error: $e');
           setState(() {
             _status = 'Auto-publish error: $e';
           });
@@ -159,14 +147,14 @@ class _PublisherScreenState extends State<PublisherScreen> {
 
     // Clean up iceoryx2 resources
     if (_publisher != null) {
-      print('[Publisher] Dropping publisher...');
-      Iceoryx2.dropPublisher(_publisher!);
-      print('[Publisher] Publisher dropped');
+      print('[Publisher] Closing publisher...');
+      _publisher!.close();
+      print('[Publisher] ✓ Publisher closed');
     }
     if (_node != null) {
-      print('[Publisher] Dropping node...');
-      Iceoryx2.dropNode(_node!);
-      print('[Publisher] Node dropped');
+      print('[Publisher] Closing node...');
+      _node!.close();
+      print('[Publisher] ✓ Node closed');
     }
 
     print('[Publisher] Cleanup completed');

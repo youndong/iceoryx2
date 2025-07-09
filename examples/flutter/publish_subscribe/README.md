@@ -1,6 +1,8 @@
 # iceoryx2 Flutter Publish-Subscribe Example
 
-A professional Flutter application demonstrating **zero-copy inter-process communication** using iceoryx2 with Dart FFI. This example implements true **event-driven architecture** for high-performance, CPU-efficient message passing.
+Flutter application demonstrating zero-copy inter-process communication using iceoryx2. 
+Implements layered architecture and event-driven messaging for high-performance, 
+CPU-efficient communication.
 
 ## Architecture Overview
 
@@ -8,45 +10,105 @@ A professional Flutter application demonstrating **zero-copy inter-process commu
 ┌──────────────┐    ┌─────────────────┐    ┌─────────────────┐
 │   Flutter    │    │   iceoryx2      │    │    Flutter      │
 │  Publisher   │───▶│ Service (DMA)   │───▶│  Subscriber     │
-│              │    │ Shared Memory   │    │ (Event-driven)  │
+│     App      │    │ Shared Memory   │    │ App (Event-driven) │
 └──────────────┘    └─────────────────┘    └─────────────────┘
+```
+
+### Layered Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                  Public API (iceoryx2.dart)                    │
+│           - Single import for developers                       │
+│           - Internal implementation hiding                     │
+├─────────────────────────────────────────────────────────────────┤
+│          High-Level API (src/iceoryx2_api.dart)                │
+│  - Node, Publisher, Subscriber classes                         │
+│  - Type-safe object-oriented interface                         │
+│  - Automatic resource management (Finalizable)                 │
+│  - Stream-based event handling                                 │
+├─────────────────────────────────────────────────────────────────┤
+│       Message Protocol (src/message_protocol.dart)             │
+│  - Message class and serialization/deserialization             │
+│  - Type-safe message classes                                   │
+│  - Protocol version management                                 │
+├─────────────────────────────────────────────────────────────────┤
+│           FFI Bindings (src/ffi/iceoryx2_ffi.dart)             │
+│  - Pure C function signatures                                  │
+│  - Memory-safe pointer operations                              │
+│  - Direct iceoryx2 C API access                                │
+└─────────────────────────────────────────────────────────────────┘
 ```
 
 ### Key Features
 
-- **Zero-Copy Communication**: Direct memory access via iceoryx2 shared memory
-- **Event-Driven Architecture**: Uses `iox2_node_wait` for CPU-efficient blocking
-- **Type-Safe FFI**: Comprehensive Dart bindings to iceoryx2 C API
-- **Structured Messaging**: Custom `DartMessage` payload type (264 bytes)
+- **Zero-copy communication**: Direct memory access via iceoryx2 shared memory
+- **Event-driven architecture**: Stream-based reactive messaging
+- **Type-safe API**: Compile-time safety with object-oriented interface
+- **Layered architecture**: Clear separation of concerns (FFI → API → Protocol)
+- **Automatic resource management**: RAII-style cleanup with Finalizable
+- **Structured messaging**: Custom Message protocol with version management
 - **Professional UI**: Clean Material Design 3 interface
-- **Automated Testing**: Headless validation with process management
+- **Comprehensive testing**: Automated headless validation
 
 ## Technical Implementation
 
 ### Message Structure
+
 ```dart
-// DartMessage payload type: 264 bytes total
-// - 8 bytes: message length (uint64)
-// - 256 bytes: UTF-8 message content
-// - Fixed-size, 8-byte aligned
+class Message {
+  final String content;           // Message content
+  final String sender;            // Sender identification
+  final DateTime timestamp;       // Creation timestamp
+  final int version;              // Protocol version
+  
+  // Factory constructor
+  static Message create(String content, {String sender = 'unknown'})
+}
+
+// Serialization format: 264 bytes total (fixed size, 8-byte aligned)
 const int MESSAGE_MAX_LENGTH = 256;
 const int MESSAGE_STRUCT_SIZE = 264;
 ```
 
-### Event-Driven Flow
-1. **Publisher**: `iox2_publisher_loan_slice_uninit` → write message → `iox2_sample_mut_send`
-2. **Shared Memory**: iceoryx2 manages zero-copy buffer transfer
-3. **Subscriber**: `iox2_node_wait` (blocks) → `iox2_subscriber_receive` → process message
+### High-Level API Usage
 
-### FFI Integration
-- **Library**: `libiceoryx2_ffi.so` (built from iceoryx2-ffi crate)
-- **Bindings**: Complete C API coverage in `iceoryx2_bindings.dart`
-- **Memory Safety**: Proper pointer management with automatic cleanup
-- **Type Safety**: Opaque types and structured error handling
+```dart
+import 'package:iceoryx2_flutter_examples/iceoryx2.dart';
 
+// Create node and publisher
+final node = Node('my-app');
+final publisher = node.publisher('flutter_example');
+
+// Send message (two methods)
+// 1. Send Message object
+final message = Message.create('Hello World!', sender: 'my-app');
+publisher.send(message);
+
+// 2. Send simple text
+publisher.sendText('Hello World!', sender: 'my-app');
+
+// Create subscriber with stream-based reception
+final subscriber = node.subscriber('flutter_example');
+subscriber.messages.listen((message) {
+  print('Received message: ${message.content} from ${message.sender}');
+});
+
+// Manual polling
+final message = subscriber.tryReceive();
+if (message != null) {
+  print('Got: ${message.content}');
+}
+
+// Cleanup (automatic via Finalizable)
+publisher.close();
+subscriber.close();
+node.close();
+```
 ## Quick Start
 
 ### Prerequisites
+
 - **Linux Desktop** (Ubuntu 20.04+ recommended)
 - **Flutter SDK** 3.0+ with Linux desktop support
 - **Rust Toolchain** (for building iceoryx2)
@@ -59,96 +121,157 @@ const int MESSAGE_STRUCT_SIZE = 264;
 # 2. Run Flutter application
 flutter run -d linux
 
-# 3. Or run headless validation
+# 3. Test headless communication
+dart run lib/headless_publisher.dart    # Terminal 1
+dart run lib/headless_subscriber.dart   # Terminal 2
+
+# 4. Run automated tests
 cd test && ./test_headless.sh
 ```
 
 ## Testing
 
-### Automated Integration Testing
+### Headless Communication Test
+```bash
+# Terminal 1: Start publisher
+dart run lib/headless_publisher.dart
+
+# Terminal 2: Start subscriber  
+dart run lib/headless_subscriber.dart
+```
+
+**Expected Output:**
+
+```
+# Publisher Terminal
+=== Headless iceoryx2 Publisher Test ===
+[Publisher] ✓ Node created successfully
+[Publisher] ✓ Publisher created successfully  
+[Publisher] ✓ Sent message #1: "Headless message #1"
+[Publisher] ✓ Sent message #2: "Headless message #2"
+...
+
+# Subscriber Terminal
+=== Headless iceoryx2 Subscriber Test ===
+[Subscriber] ✓ Node created successfully
+[Subscriber] ✓ Subscriber created successfully
+[Subscriber] ✓ #1: "Headless message #1" from Headless Publisher (125ms)
+[Subscriber] ✓ #2: "Headless message #2" from Headless Publisher (2127ms)
+...
+```
+
+### Automated Integration Tests
 ```bash
 cd test && ./test_headless.sh
 ```
 
-**Test Process:**
-1. Builds `libiceoryx2_ffi.so` from source
-2. Starts headless subscriber (event-driven, isolate-based)
-3. Starts headless publisher (500ms interval)
-4. Validates message integrity for 30 seconds
-5. Reports statistics and cleans up all processes
-
-**Expected Output:**
-```
-✓ Both processes started successfully!
-✓ Publisher: 59 messages sent (2.00 msg/s)
-✓ Subscriber: 29 messages received (0.97 msg/s)
-✓ Architecture validated: Event-driven, zero-copy communication
+### Flutter Widget Tests
+```bash
+flutter test
 ```
 
-### FFI Library Testing
+### FFI Library Tests
 ```bash
 dart test/test_ffi_load.dart
 ```
-Validates FFI library loading and symbol resolution.
-
-### Manual UI Testing
-```bash
-flutter run -d linux
-```
-1. Select "Publisher" or "Subscriber" mode
-2. Test message publishing and real-time reception
-3. Verify event-driven behavior (no CPU spinning)
 
 ## Project Structure
 
 ```
 lib/
-├── iceoryx2_bindings.dart      # Complete FFI bindings to iceoryx2 C API
-├── main.dart                   # Flutter UI entry point
-├── publisher.dart              # Publisher UI component  
-├── subscriber.dart             # Subscriber UI component
-├── headless_publisher.dart     # Headless publisher for testing
-└── headless_subscriber.dart    # Event-driven headless subscriber
+├── iceoryx2.dart                    # Public API entry point
+├── src/                             # Internal implementation (private)
+│   ├── ffi/
+│   │   └── iceoryx2_ffi.dart        # Pure FFI bindings
+│   ├── iceoryx2_api.dart            # High-level object API
+│   └── message_protocol.dart        # Message serialization
+├── main.dart                        # Flutter app selector
+├── publisher.dart                   # Publisher UI app
+├── subscriber.dart                  # Subscriber UI app  
+├── headless_publisher.dart          # Headless publisher test
+├── headless_subscriber.dart         # Headless subscriber test
+└── iceoryx2_bindings.dart           # Legacy FFI bindings (compatibility)
 
 test/
-├── test_headless.sh           # Automated integration test script
-├── test_ffi_load.dart         # FFI loading validation
-└── ...
+├── test_headless.sh                 # Integration test script
+├── core_test.dart                   # Core FFI tests
+├── widget_test.dart                 # Flutter widget tests
+└── test_ffi_load.dart               # FFI loading tests
 
-build.sh                      # iceoryx2 FFI library build script
+build.sh                            # Build script
+README.md                           # This document
+pubspec.yaml                        # Flutter project configuration
 ```
 
 ## Implementation Details
 
-### Core FFI Functions
+### Architecture Migration
+
+This example demonstrates migration from direct FFI usage to layered architecture:
+
+**Before (Direct FFI):**
 ```dart
-// Node and service management
-static Pointer<Void> createNode()
-static Pointer<Void> createPublisher(Pointer<Void> node, String serviceName)  
-static Pointer<Void> createSubscriber(Pointer<Void> node, String serviceName)
+import 'iceoryx2_bindings.dart';
 
-// Message operations
-static void publish(Pointer<Void> publisher, String message)
-static String? receive(Pointer<Void> subscriber)
-
-// Event-driven waiting
-static int nodeWait(Pointer<Void> node, {int timeoutSecs, int timeoutNsecs})
-
-// Resource cleanup
-static void cleanup(Pointer<Void> node, {...})
+final node = Iceoryx2.createNode();
+final publisher = Iceoryx2.createPublisher(node, 'service');
+Iceoryx2.send(publisher, message);
 ```
 
-### Service Configuration
+**After (High-Level API):**
 ```dart
-// Explicit payload type configuration
-iox2ServiceBuilderPubSubSetPayloadTypeDetails(
-  pubSubBuilderRef,
-  IOX2_TYPE_VARIANT_FIXED_SIZE,
-  "DartMessage",                // Type name
-  "DartMessage".length,         // Name length  
-  MESSAGE_STRUCT_SIZE,          // 264 bytes
-  8                            // 8-byte alignment
-);
+import 'iceoryx2.dart';
+
+final node = Node('my-node');
+final publisher = node.publisher('service');
+final message = Message.create('Hello', sender: 'my-app');
+publisher.send(message);
+```
+
+### Core API Classes
+```dart
+// Node management
+class Node implements Finalizable {
+  Node(String name)
+  Publisher publisher(String serviceName)
+  Subscriber subscriber(String serviceName)
+  void close()
+}
+
+// Message publishing
+class Publisher implements Finalizable {
+  void send(Message message)
+  void sendText(String text, {String sender})
+  String get serviceName
+  void close()
+}
+
+// Message receiving
+class Subscriber implements Finalizable {
+  Stream<Message> get messages          // Event-driven stream
+  Message? tryReceive()                 // Manual polling
+  String get serviceName
+  void close()
+}
+
+// Message protocol
+class Message {
+  static Message create(String content, {String sender})
+  String get content
+  String get sender
+  DateTime get timestamp
+  int get version
+}
+```
+
+### FFI Layer Functions
+```dart
+// Pure FFI bindings (src/ffi/iceoryx2_ffi.dart)
+final iox2NodeBuilderNew = iox2lib.lookup<...>('iox2_node_builder_new')
+final iox2NodeBuilderCreate = iox2lib.lookup<...>('iox2_node_builder_create')
+final iox2PublisherLoanSliceUninit = iox2lib.lookup<...>('iox2_publisher_loan_slice_uninit')
+final iox2SubscriberReceive = iox2lib.lookup<...>('iox2_subscriber_receive')
+// ... and more
 ```
 
 ### Event-Driven Subscriber
@@ -161,9 +284,9 @@ void _startNodeWaitIsolate() {
 // CPU-efficient blocking wait
 static void _nodeWaitIsolateEntry(IsolateParams params) {
   while (_running) {
-    final result = Iceoryx2.nodeWait(node, timeoutSecs: 1, timeoutNsecs: 0);
-    if (result == IOX2_OK) {
-      final message = Iceoryx2.receive(subscriber);
+    final result = ffi.iox2NodeWait(node, timeoutSecs: 1, timeoutNsecs: 0);
+    if (result == ffi.IOX2_OK) {
+      final message = _tryReceiveMessage();
       if (message != null) {
         sendPort.send(message);  // Send to main isolate
       }
@@ -172,139 +295,114 @@ static void _nodeWaitIsolateEntry(IsolateParams params) {
 }
 ```
 
-## Performance Characteristics
-
-### Memory Usage
-- **Zero-Copy**: Direct shared memory access, no data copying
-- **Fixed Allocation**: 264-byte message buffers, predictable memory usage
-- **Resource Management**: Automatic cleanup prevents memory leaks
-
-### CPU Efficiency  
-- **Event-Driven**: `iox2_node_wait` blocks until messages arrive
-- **No Polling**: Zero CPU usage when idle
-- **Isolate-Based**: Background processing doesn't block UI thread
-
-### Throughput
-- **Design Capacity**: Thousands of messages per second
-- **Test Results**: 2 msg/s (limited by test interval)
-- **Latency**: Sub-millisecond message delivery
-
-## Advanced Features
-
-### Custom Payload Types
-The example demonstrates explicit payload type configuration:
-```c
-// Equivalent C configuration
-iox2_service_builder_pub_sub_set_payload_type_details(
-    &pub_sub_builder,
-    iox2_type_variant_e_FIXED_SIZE,
-    "DartMessage",
-    strlen("DartMessage"),
-    264,    // size
-    8       // alignment
+### Service Configuration
+```dart
+// Service setup with payload type details (in src/iceoryx2_api.dart)
+final payloadTypeResult = ffi.iox2ServiceBuilderPubSubSetPayloadTypeDetails(
+  pubSubBuilderRef,
+  ffi.IOX2_TYPE_VARIANT_FIXED_SIZE,
+  payloadTypeName,
+  "DartMessage".length,
+  ffi.MESSAGE_STRUCT_SIZE,          // 264 bytes
+  8                                 // 8-byte alignment  
 );
 ```
 
-### Error Handling
-```dart
-try {
-  final result = iox2ServiceBuilderPubSubSetPayloadTypeDetails(...);
-  if (result != IOX2_OK) {
-    throw Exception('Failed to set payload type: $result');
-  }
-} catch (e) {
-  print('[FFI] Error: $e');
-  // Cleanup and recovery
-}
-```
+## Performance Characteristics
 
-### Process Management
-Automated test script includes robust process cleanup:
-```bash
-cleanup() {
-    echo "Cleaning up background processes..."
-    kill $SUBSCRIBER_PID $PUBLISHER_PID 2>/dev/null || true
-    wait $SUBSCRIBER_PID $PUBLISHER_PID 2>/dev/null || true
-    # Additional cleanup for edge cases
-    pkill -f "dart.*headless" 2>/dev/null || true
-}
-trap cleanup EXIT INT TERM
-```
+### Memory Usage
+
+- **Zero-copy**: Direct shared memory access, no data copying
+- **Fixed allocation**: 264-byte message buffers, predictable memory usage  
+- **Automatic cleanup**: Finalizable-based resource management prevents leaks
+- **Object-oriented**: Type-safe API reduces memory errors
+
+### CPU Efficiency  
+
+- **Event-driven**: Stream-based reactive messaging
+- **No polling**: Zero CPU usage when idle
+- **Isolate-based**: Background processing does not block UI thread
+- **Direct FFI**: Minimal overhead for high-performance paths
+
+### Throughput and Latency
+
+- **Design capacity**: Thousands of messages per second
+- **Sub-millisecond**: Ultra-low latency message delivery
+- **Test results**: 2 msg/s (limited by test interval for visibility)
+- **Configurable**: Message intervals adjustable for different use cases
 
 ## Troubleshooting
 
-### Build Issues
+### Common Issues
+
+**1. FFI library not found**
 ```bash
-# Ensure Rust toolchain is available
-rustc --version
+# Ensure iceoryx2 is built
+./build.sh
 
-# Build iceoryx2 manually
-cd ../../..
-cargo build --release -p iceoryx2-ffi
-
-# Verify library exists
+# Check library path
 ls -la target/release/libiceoryx2_ffi.so
 ```
 
-### Runtime Issues
+**2. Service not found**
 ```bash
-# Check FFI library loading
-dart test/test_ffi_load.dart
+# Check if another instance is running
+ps aux | grep dart
 
-# Enable debug logging
-export RUST_LOG=debug
-flutter run -d linux
-
-# Verify shared memory permissions
-ls -la /dev/shm/
+# Clean up remaining processes
+pkill -f dart
 ```
 
-### Test Failures
+**3. Message not received**
 ```bash
-# Clean previous test artifacts
-pkill -f "dart.*headless" 2>/dev/null || true
-rm -rf /tmp/iceoryx2_* 2>/dev/null || true
-
-# Run with verbose output
-cd test && bash -x ./test_headless.sh
+# Ensure publisher and subscriber use same service name "flutter_example"
+# Check logs for initialization errors
+dart run lib/headless_publisher.dart  # Should show "✓ Node created"
+dart run lib/headless_subscriber.dart # Should show "✓ Subscriber created"
 ```
 
-## Extending the Example
+### Debug Mode
+```dart
+// Enable debug logging by checking console output
+// All important operations log with [Node], [Publisher], [Subscriber] prefixes
+```
 
-### Adding Complex Data Types
-1. Define Dart class matching C struct
-2. Implement serialization/deserialization
-3. Update payload type configuration
-4. Modify message helper functions
+## Learning Resources
 
-### Platform Support
-1. Add Windows/macOS FFI library paths
-2. Platform-specific build scripts
-3. Conditional compilation for platform differences
+### iceoryx2 Documentation
+- [iceoryx2 GitHub](https://github.com/eclipse-iceoryx/iceoryx2)
+- [C API Reference](https://iceoryx.io/v2.0.5/api/)
+- [Architecture Guide](https://iceoryx.io/v2.0.5/getting-started/overview/)
 
-### Performance Optimization
-1. Implement batched message processing
-2. Add message compression
-3. Optimize payload structure alignment
-4. Use multiple service channels
+### Flutter FFI
+- [Dart FFI Documentation](https://dart.dev/guides/libraries/c-interop)
+- [Flutter Desktop Development](https://docs.flutter.dev/development/platform-integration/linux/building)
 
-## Technical Notes
+## Contributing
 
-### Memory Alignment
-The 264-byte message structure uses 8-byte alignment for optimal performance on 64-bit systems.
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Test your changes (`dart analyze`, `flutter test`)
+4. Commit your changes (`git commit -m 'Add amazing feature'`)
+5. Push to the branch (`git push origin feature/amazing-feature`)
+6. Open a Pull Request
 
-### Thread Safety
-All FFI operations are thread-safe. The isolate-based subscriber ensures clean separation between UI and background processing.
+### Development Guidelines
 
-### Resource Lifecycle
-- **Node**: Created once per application instance
-- **Publisher/Subscriber**: Created per service, cleaned up on disposal
-- **Samples**: Short-lived, automatically managed by iceoryx2
+- Follow Dart style guidelines (`dart format`)
+- Add tests for new features  
+- Update documentation
+- Ensure FFI memory safety
+- Test on Linux platform
 
 ## License
 
-This example follows the iceoryx2 license terms (Apache-2.0 OR MIT).
+This project is part of the iceoryx2 ecosystem and follows the same licensing 
+terms (Apache-2.0 OR MIT).
 
 ---
 
-**Status**: Production-ready example with comprehensive testing and documentation.
+**Layered architecture Flutter-iceoryx2 integration successfully implemented.**
+
+*This example demonstrates the evolution from direct FFI bindings to a 
+professional, maintainable layered architecture.*
