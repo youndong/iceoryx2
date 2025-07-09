@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'publisher.dart';
-import 'subscriber.dart';
+import 'gui/publisher_app.dart';
+import 'gui/subscriber_app.dart';
 
 void main() {
   runApp(const Iceoryx2ExampleApp());

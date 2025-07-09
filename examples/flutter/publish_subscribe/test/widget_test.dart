@@ -6,8 +6,7 @@
 // tree, read text, and verify that the values of widget properties are correct.
 
 import 'package:flutter_test/flutter_test.dart';
-
-import '../lib/main.dart';
+import 'package:iceoryx2_flutter_examples/main.dart';
 
 void main() {
   testWidgets('App selector screen test', (WidgetTester tester) async {

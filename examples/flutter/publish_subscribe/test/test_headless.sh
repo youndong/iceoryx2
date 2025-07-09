@@ -78,7 +78,7 @@ echo -e "${YELLOW}Step 2: Getting Flutter dependencies...${NC}"
 flutter pub get
 
 echo -e "${YELLOW}Step 3: Starting headless subscriber (event-driven)...${NC}"
-dart lib/headless_subscriber.dart &
+dart lib/headless/headless_subscriber.dart &
 SUBSCRIBER_PID=$!
 echo "Subscriber started with PID: $SUBSCRIBER_PID"
 
@@ -86,7 +86,7 @@ echo "Subscriber started with PID: $SUBSCRIBER_PID"
 sleep 2
 
 echo -e "${YELLOW}Step 4: Starting headless publisher...${NC}"
-dart lib/headless_publisher.dart &
+dart lib/headless/headless_publisher.dart &
 PUBLISHER_PID=$!
 echo "Publisher started with PID: $PUBLISHER_PID"
 

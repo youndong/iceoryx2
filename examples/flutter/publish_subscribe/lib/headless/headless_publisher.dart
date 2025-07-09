@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:async';
-import 'iceoryx2.dart';
+import '../iceoryx2.dart';
 
 /// Headless publisher for testing - sends messages automatically
 /// No UI, pure console output for validation
@@ -83,7 +83,7 @@ class HeadlessPublisher {
       _publisher!.sendText(message, sender: 'Headless Publisher');
       _successCount++;
       print('[Publisher] ✓ Sent message #$_messageCounter: "$message"');
-      
+
       // Print periodic stats
       if (_messageCounter % 10 == 0) {
         _printStats();
@@ -95,24 +95,26 @@ class HeadlessPublisher {
   }
 
   void _printStats() {
-    final elapsed = _startTime != null 
-        ? DateTime.now().difference(_startTime!).inSeconds 
+    final elapsed = _startTime != null
+        ? DateTime.now().difference(_startTime!).inSeconds
         : 0;
-    
+
     print('[Publisher] === Statistics ===');
     print('[Publisher] Total messages: $_messageCounter');
     print('[Publisher] Successful: $_successCount');
     print('[Publisher] Failed: $_failureCount');
-    print('[Publisher] Success rate: ${(_successCount / _messageCounter * 100).toStringAsFixed(1)}%');
+    print(
+        '[Publisher] Success rate: ${(_successCount / _messageCounter * 100).toStringAsFixed(1)}%');
     print('[Publisher] Elapsed time: ${elapsed}s');
-    print('[Publisher] Messages/second: ${(_messageCounter / elapsed).toStringAsFixed(2)}');
+    print(
+        '[Publisher] Messages/second: ${(_messageCounter / elapsed).toStringAsFixed(2)}');
     print('[Publisher] ====================');
   }
 
   void stop() {
     print('[Publisher] Stopping publisher...');
     _publishTimer?.cancel();
-    
+
     _printStats();
 
     if (_publisher != null) {
@@ -120,13 +122,13 @@ class HeadlessPublisher {
       _publisher!.close();
       print('[Publisher] ✓ Publisher closed');
     }
-    
+
     if (_node != null) {
       print('[Publisher] Closing node...');
       _node!.close();
       print('[Publisher] ✓ Node closed');
     }
-    
+
     print('[Publisher] ✓ Stopped successfully');
   }
 }

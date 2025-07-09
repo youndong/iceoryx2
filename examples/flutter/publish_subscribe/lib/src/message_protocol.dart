@@ -1,5 +1,5 @@
 /// Message protocol for iceoryx2 communication
-/// 이 파일은 메시지 송수신 규약과 직렬화/역직렬화 로직을 정의합니다.
+/// This file defines message communication protocols and serialization/deserialization logic.
 library message_protocol;
 
 import 'dart:ffi';
@@ -30,7 +30,8 @@ class Message {
   }
 
   @override
-  String toString() => 'Message(content: "$content", sender: "$sender", timestamp: $timestamp)';
+  String toString() =>
+      'Message(content: "$content", sender: "$sender", timestamp: $timestamp)';
 
   @override
   bool operator ==(Object other) =>
@@ -46,7 +47,7 @@ class Message {
 }
 
 /// Helper class for message serialization and deserialization
-/// 
+///
 /// Message format:
 /// - First 8 bytes: message length (uint64)
 /// - Next N bytes: JSON-encoded message data
@@ -61,12 +62,13 @@ class MessageProtocol {
         'timestamp': message.timestamp.toIso8601String(),
         'sender': message.sender,
       };
-      
+
       final jsonString = jsonEncode(messageData);
       final jsonBytes = utf8.encode(jsonString);
-      
+
       if (jsonBytes.length > ffi.MESSAGE_MAX_LENGTH) {
-        throw ArgumentError('Message too long: ${jsonBytes.length} > ${ffi.MESSAGE_MAX_LENGTH}');
+        throw ArgumentError(
+            'Message too long: ${jsonBytes.length} > ${ffi.MESSAGE_MAX_LENGTH}');
       }
 
       // Clear the entire buffer first
@@ -109,7 +111,8 @@ class MessageProtocol {
       }
 
       if (messageLength > ffi.MESSAGE_MAX_LENGTH) {
-        throw FormatException('Message too long: $messageLength > ${ffi.MESSAGE_MAX_LENGTH}');
+        throw FormatException(
+            'Message too long: $messageLength > ${ffi.MESSAGE_MAX_LENGTH}');
       }
 
       // Read message content
@@ -134,5 +137,4 @@ class MessageProtocol {
       rethrow;
     }
   }
-
 }

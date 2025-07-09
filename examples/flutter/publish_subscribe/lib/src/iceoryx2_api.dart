@@ -1,5 +1,5 @@
 /// High-level Dart API for iceoryx2
-/// 이 파일은 FFI를 감싸서 Dart 개발자가 사용하기 쉬운 고수준 클래스를 제공합니다.
+/// This file provides high-level classes that wrap FFI for easy use by Dart developers.
 library iceoryx2_api;
 
 import 'dart:ffi';
@@ -19,7 +19,7 @@ class Iceoryx2Exception implements Exception {
   const Iceoryx2Exception(this.message, [this.errorCode]);
 
   @override
-  String toString() => errorCode != null 
+  String toString() => errorCode != null
       ? 'Iceoryx2Exception: $message (code: $errorCode)'
       : 'Iceoryx2Exception: $message';
 }
@@ -34,20 +34,16 @@ class Node implements Finalizable {
   Node(this._name) {
     try {
       print('[Node] Creating node: "$_name"');
-      
+
       final nodeBuilder = ffi.iox2NodeBuilderNew(nullptr);
       if (nodeBuilder == nullptr) {
         throw const Iceoryx2Exception('Failed to create node builder');
       }
 
       final nodePointer = calloc<Pointer<ffi.Iox2Node>>();
-      
+
       final result = ffi.iox2NodeBuilderCreate(
-        nodeBuilder, 
-        nullptr, 
-        ffi.IOX2_SERVICE_TYPE_IPC, 
-        nodePointer.cast()
-      );
+          nodeBuilder, nullptr, ffi.IOX2_SERVICE_TYPE_IPC, nodePointer.cast());
 
       if (result != ffi.IOX2_OK) {
         calloc.free(nodePointer);
@@ -65,9 +61,8 @@ class Node implements Finalizable {
     }
   }
 
-  static final _finalizer = NativeFinalizer(
-    ffi.iox2lib.lookup<NativeFunction<Void Function(Pointer<Void>)>>('iox2_node_drop')
-  );
+  static final _finalizer = NativeFinalizer(ffi.iox2lib
+      .lookup<NativeFunction<Void Function(Pointer<Void>)>>('iox2_node_drop'));
 
   /// Get the node name
   String get name => _name;
@@ -123,9 +118,9 @@ class Publisher implements Finalizable {
     }
   }
 
-  static final _finalizer = NativeFinalizer(
-    ffi.iox2lib.lookup<NativeFunction<Void Function(Pointer<Void>)>>('iox2_publisher_drop')
-  );
+  static final _finalizer = NativeFinalizer(ffi.iox2lib
+      .lookup<NativeFunction<Void Function(Pointer<Void>)>>(
+          'iox2_publisher_drop'));
 
   /// Get the service name
   String get serviceName => _serviceName;
@@ -163,15 +158,15 @@ class Publisher implements Finalizable {
   }
 
   // Private helper methods
-  static Pointer<ffi.Iox2Publisher> _createPublisher(Pointer<ffi.Iox2Node> node, String serviceName) {
+  static Pointer<ffi.Iox2Publisher> _createPublisher(
+      Pointer<ffi.Iox2Node> node, String serviceName) {
     final serviceNameUtf8 = serviceName.toNativeUtf8();
     final serviceNameHandlePtr = calloc<Pointer<Void>>();
 
     try {
       // Create service name
       final result = ffi.iox2ServiceNameNew(
-        nullptr, serviceNameUtf8, serviceName.length, serviceNameHandlePtr
-      );
+          nullptr, serviceNameUtf8, serviceName.length, serviceNameHandlePtr);
       if (result != ffi.IOX2_OK) {
         throw Iceoryx2Exception('Failed to create service name', result);
       }
@@ -183,7 +178,8 @@ class Publisher implements Finalizable {
       final nodeHandlePtr = calloc<Pointer<Void>>();
       nodeHandlePtr.value = node.cast();
 
-      final serviceBuilder = ffi.iox2NodeServiceBuilder(nodeHandlePtr, nullptr, serviceNameCasted);
+      final serviceBuilder =
+          ffi.iox2NodeServiceBuilder(nodeHandlePtr, nullptr, serviceNameCasted);
       calloc.free(nodeHandlePtr);
 
       if (serviceBuilder == nullptr) {
@@ -193,7 +189,8 @@ class Publisher implements Finalizable {
       // Transform to pub-sub service builder
       final pubSubServiceBuilder = ffi.iox2ServiceBuilderPubSub(serviceBuilder);
       if (pubSubServiceBuilder == nullptr) {
-        throw const Iceoryx2Exception('Failed to create pub-sub service builder');
+        throw const Iceoryx2Exception(
+            'Failed to create pub-sub service builder');
       }
 
       // Set payload type details
@@ -201,30 +198,32 @@ class Publisher implements Finalizable {
       final pubSubBuilderRef = calloc<Pointer<Void>>();
       pubSubBuilderRef.value = pubSubServiceBuilder;
 
-      final payloadTypeResult = ffi.iox2ServiceBuilderPubSubSetPayloadTypeDetails(
-        pubSubBuilderRef,
-        ffi.IOX2_TYPE_VARIANT_FIXED_SIZE,
-        payloadTypeName,
-        "DartMessage".length,
-        ffi.MESSAGE_STRUCT_SIZE,
-        8 // 8-byte alignment
-      );
+      final payloadTypeResult =
+          ffi.iox2ServiceBuilderPubSubSetPayloadTypeDetails(
+              pubSubBuilderRef,
+              ffi.IOX2_TYPE_VARIANT_FIXED_SIZE,
+              payloadTypeName,
+              "DartMessage".length,
+              ffi.MESSAGE_STRUCT_SIZE,
+              8 // 8-byte alignment
+              );
 
       calloc.free(pubSubBuilderRef);
       calloc.free(payloadTypeName);
 
       if (payloadTypeResult != ffi.IOX2_OK) {
-        throw Iceoryx2Exception('Failed to set payload type details', payloadTypeResult);
+        throw Iceoryx2Exception(
+            'Failed to set payload type details', payloadTypeResult);
       }
 
       // Open or create service
       final servicePtr = calloc<Pointer<Void>>();
       final serviceResult = ffi.iox2ServiceBuilderPubSubOpenOrCreate(
-        pubSubServiceBuilder, nullptr, servicePtr
-      );
+          pubSubServiceBuilder, nullptr, servicePtr);
       if (serviceResult != ffi.IOX2_OK) {
         calloc.free(servicePtr);
-        throw Iceoryx2Exception('Failed to open or create service', serviceResult);
+        throw Iceoryx2Exception(
+            'Failed to open or create service', serviceResult);
       }
 
       final service = servicePtr.value;
@@ -233,7 +232,8 @@ class Publisher implements Finalizable {
       // Create publisher builder
       final serviceRef = calloc<Pointer<Void>>();
       serviceRef.value = service;
-      final publisherBuilder = ffi.iox2PortFactoryPubSubPublisherBuilder(serviceRef, nullptr);
+      final publisherBuilder =
+          ffi.iox2PortFactoryPubSubPublisherBuilder(serviceRef, nullptr);
       calloc.free(serviceRef);
 
       if (publisherBuilder == nullptr) {
@@ -243,8 +243,7 @@ class Publisher implements Finalizable {
       // Create publisher
       final publisherPtr = calloc<Pointer<Void>>();
       final publisherResult = ffi.iox2PortFactoryPublisherBuilderCreate(
-        publisherBuilder, nullptr, publisherPtr
-      );
+          publisherBuilder, nullptr, publisherPtr);
       if (publisherResult != ffi.IOX2_OK) {
         calloc.free(publisherPtr);
         throw Iceoryx2Exception('Failed to create publisher', publisherResult);
@@ -253,14 +252,14 @@ class Publisher implements Finalizable {
       final publisher = publisherPtr.value;
       calloc.free(publisherPtr);
       return publisher.cast<ffi.Iox2Publisher>();
-
     } finally {
       calloc.free(serviceNameHandlePtr);
       calloc.free(serviceNameUtf8);
     }
   }
 
-  static void _publishMessage(Pointer<ffi.Iox2Publisher> publisher, Message message) {
+  static void _publishMessage(
+      Pointer<ffi.Iox2Publisher> publisher, Message message) {
     final publisherRef = calloc<Pointer<Void>>();
     final samplePtr = calloc<Pointer<Void>>();
     final payloadPtr = calloc<Pointer<Void>>();
@@ -269,7 +268,8 @@ class Publisher implements Finalizable {
 
     try {
       // Loan a sample
-      final result = ffi.iox2PublisherLoanSliceUninit(publisherRef, nullptr, samplePtr, 1);
+      final result =
+          ffi.iox2PublisherLoanSliceUninit(publisherRef, nullptr, samplePtr, 1);
       if (result != ffi.IOX2_OK) {
         throw Iceoryx2Exception('Failed to loan sample', result);
       }
@@ -293,7 +293,6 @@ class Publisher implements Finalizable {
       if (sendResult != ffi.IOX2_OK) {
         throw Iceoryx2Exception('Failed to send message', sendResult);
       }
-
     } finally {
       calloc.free(publisherRef);
       calloc.free(samplePtr);
@@ -308,7 +307,7 @@ class Subscriber implements Finalizable {
   final Node _node;
   final String _serviceName;
   bool _isClosed = false;
-  
+
   // For event-driven messaging
   Isolate? _isolate;
   final ReceivePort _receivePort = ReceivePort();
@@ -324,7 +323,7 @@ class Subscriber implements Finalizable {
       _handle = _createSubscriber(_node._handle, _serviceName);
       _sendPort = _receivePort.sendPort;
       _finalizer.attach(this, _handle.cast(), detach: this);
-      
+
       // Start background listener
       _startListener();
       print('[Subscriber] ✓ Subscriber created successfully');
@@ -334,9 +333,9 @@ class Subscriber implements Finalizable {
     }
   }
 
-  static final _finalizer = NativeFinalizer(
-    ffi.iox2lib.lookup<NativeFunction<Void Function(Pointer<Void>)>>('iox2_subscriber_drop')
-  );
+  static final _finalizer = NativeFinalizer(ffi.iox2lib
+      .lookup<NativeFunction<Void Function(Pointer<Void>)>>(
+          'iox2_subscriber_drop'));
 
   /// Get the service name
   String get serviceName => _serviceName;
@@ -362,11 +361,11 @@ class Subscriber implements Finalizable {
   void close() {
     if (!_isClosed) {
       print('[Subscriber] Closing subscriber for service "$_serviceName"');
-      
+
       // Stop background isolate
       _isolate?.kill(priority: Isolate.immediate);
       _receivePort.close();
-      
+
       _finalizer.detach(this);
       ffi.iox2SubscriberDrop(_handle.cast());
       _isClosed = true;
@@ -403,15 +402,15 @@ class Subscriber implements Finalizable {
     }
   }
 
-  static Pointer<ffi.Iox2Subscriber> _createSubscriber(Pointer<ffi.Iox2Node> node, String serviceName) {
+  static Pointer<ffi.Iox2Subscriber> _createSubscriber(
+      Pointer<ffi.Iox2Node> node, String serviceName) {
     final serviceNameUtf8 = serviceName.toNativeUtf8();
     final serviceNameHandlePtr = calloc<Pointer<Void>>();
 
     try {
       // Create service name
       final result = ffi.iox2ServiceNameNew(
-        nullptr, serviceNameUtf8, serviceName.length, serviceNameHandlePtr
-      );
+          nullptr, serviceNameUtf8, serviceName.length, serviceNameHandlePtr);
       if (result != ffi.IOX2_OK) {
         throw Iceoryx2Exception('Failed to create service name', result);
       }
@@ -423,7 +422,8 @@ class Subscriber implements Finalizable {
       final nodeHandlePtr = calloc<Pointer<Void>>();
       nodeHandlePtr.value = node.cast();
 
-      final serviceBuilder = ffi.iox2NodeServiceBuilder(nodeHandlePtr, nullptr, serviceNameCasted);
+      final serviceBuilder =
+          ffi.iox2NodeServiceBuilder(nodeHandlePtr, nullptr, serviceNameCasted);
       calloc.free(nodeHandlePtr);
 
       if (serviceBuilder == nullptr) {
@@ -433,7 +433,8 @@ class Subscriber implements Finalizable {
       // Transform to pub-sub service builder
       final pubSubServiceBuilder = ffi.iox2ServiceBuilderPubSub(serviceBuilder);
       if (pubSubServiceBuilder == nullptr) {
-        throw const Iceoryx2Exception('Failed to create pub-sub service builder');
+        throw const Iceoryx2Exception(
+            'Failed to create pub-sub service builder');
       }
 
       // Set payload type details
@@ -441,30 +442,32 @@ class Subscriber implements Finalizable {
       final pubSubBuilderRef = calloc<Pointer<Void>>();
       pubSubBuilderRef.value = pubSubServiceBuilder;
 
-      final payloadTypeResult = ffi.iox2ServiceBuilderPubSubSetPayloadTypeDetails(
-        pubSubBuilderRef,
-        ffi.IOX2_TYPE_VARIANT_FIXED_SIZE,
-        payloadTypeName,
-        "DartMessage".length,
-        ffi.MESSAGE_STRUCT_SIZE,
-        8 // 8-byte alignment
-      );
+      final payloadTypeResult =
+          ffi.iox2ServiceBuilderPubSubSetPayloadTypeDetails(
+              pubSubBuilderRef,
+              ffi.IOX2_TYPE_VARIANT_FIXED_SIZE,
+              payloadTypeName,
+              "DartMessage".length,
+              ffi.MESSAGE_STRUCT_SIZE,
+              8 // 8-byte alignment
+              );
 
       calloc.free(pubSubBuilderRef);
       calloc.free(payloadTypeName);
 
       if (payloadTypeResult != ffi.IOX2_OK) {
-        throw Iceoryx2Exception('Failed to set payload type details', payloadTypeResult);
+        throw Iceoryx2Exception(
+            'Failed to set payload type details', payloadTypeResult);
       }
 
       // Open or create service
       final servicePtr = calloc<Pointer<Void>>();
       final serviceResult = ffi.iox2ServiceBuilderPubSubOpenOrCreate(
-        pubSubServiceBuilder, nullptr, servicePtr
-      );
+          pubSubServiceBuilder, nullptr, servicePtr);
       if (serviceResult != ffi.IOX2_OK) {
         calloc.free(servicePtr);
-        throw Iceoryx2Exception('Failed to open or create service', serviceResult);
+        throw Iceoryx2Exception(
+            'Failed to open or create service', serviceResult);
       }
 
       final service = servicePtr.value;
@@ -473,7 +476,8 @@ class Subscriber implements Finalizable {
       // Create subscriber builder
       final serviceRef = calloc<Pointer<Void>>();
       serviceRef.value = service;
-      final subscriberBuilder = ffi.iox2PortFactoryPubSubSubscriberBuilder(serviceRef, nullptr);
+      final subscriberBuilder =
+          ffi.iox2PortFactoryPubSubSubscriberBuilder(serviceRef, nullptr);
       calloc.free(serviceRef);
 
       if (subscriberBuilder == nullptr) {
@@ -483,17 +487,16 @@ class Subscriber implements Finalizable {
       // Create subscriber
       final subscriberPtr = calloc<Pointer<Void>>();
       final subscriberResult = ffi.iox2PortFactorySubscriberBuilderCreate(
-        subscriberBuilder, nullptr, subscriberPtr
-      );
+          subscriberBuilder, nullptr, subscriberPtr);
       if (subscriberResult != ffi.IOX2_OK) {
         calloc.free(subscriberPtr);
-        throw Iceoryx2Exception('Failed to create subscriber', subscriberResult);
+        throw Iceoryx2Exception(
+            'Failed to create subscriber', subscriberResult);
       }
 
       final subscriber = subscriberPtr.value;
       calloc.free(subscriberPtr);
       return subscriber.cast<ffi.Iox2Subscriber>();
-
     } finally {
       calloc.free(serviceNameHandlePtr);
       calloc.free(serviceNameUtf8);
@@ -507,7 +510,8 @@ class Subscriber implements Finalizable {
     subscriberRef.value = subscriber.cast();
 
     try {
-      final result = ffi.iox2SubscriberReceive(subscriberRef, nullptr, samplePtr);
+      final result =
+          ffi.iox2SubscriberReceive(subscriberRef, nullptr, samplePtr);
       if (result != ffi.IOX2_OK) {
         return null; // No data available or error
       }

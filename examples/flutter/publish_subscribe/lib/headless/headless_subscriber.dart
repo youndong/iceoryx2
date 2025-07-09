@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:async';
-import 'iceoryx2.dart';
+import '../iceoryx2.dart';
 
 /// Headless subscriber for testing - receives messages automatically
 /// No UI, pure console output for validation
@@ -45,7 +45,8 @@ class HeadlessSubscriber {
       print('[Subscriber] ✓ Node created successfully');
 
       // Create subscriber for service "flutter_example"
-      print('[Subscriber] Creating subscriber for service "flutter_example"...');
+      print(
+          '[Subscriber] Creating subscriber for service "flutter_example"...');
       _subscriber = _node!.subscriber('flutter_example');
       print('[Subscriber] ✓ Subscriber created successfully');
 
@@ -70,12 +71,11 @@ class HeadlessSubscriber {
       (message) {
         _totalReceived++;
         final now = DateTime.now();
-        final elapsed = _startTime != null 
-            ? now.difference(_startTime!).inMilliseconds 
-            : 0;
+        final elapsed =
+            _startTime != null ? now.difference(_startTime!).inMilliseconds : 0;
 
         print('[Subscriber] ✓ #$_totalReceived: "${message.content}" '
-              'from ${message.sender} (${elapsed}ms)');
+            'from ${message.sender} (${elapsed}ms)');
 
         // Show periodic statistics
         if (_totalReceived % 10 == 0) {
@@ -106,7 +106,8 @@ class HeadlessSubscriber {
       try {
         final message = _subscriber!.tryReceive();
         if (message != null) {
-          print('[Subscriber] ✓ Manual poll received: "${message.content}" from ${message.sender}');
+          print(
+              '[Subscriber] ✓ Manual poll received: "${message.content}" from ${message.sender}');
         } else {
           print('[Subscriber] Manual poll: no message available');
         }
@@ -121,7 +122,7 @@ class HeadlessSubscriber {
 
     final elapsed = DateTime.now().difference(_startTime!);
     final rate = _totalReceived / elapsed.inSeconds;
-    
+
     print('[Subscriber] === Statistics ===');
     print('[Subscriber] Total received: $_totalReceived messages');
     print('[Subscriber] Elapsed time: ${elapsed.inSeconds}s');

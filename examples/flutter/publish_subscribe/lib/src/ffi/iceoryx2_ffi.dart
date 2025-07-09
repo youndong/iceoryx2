@@ -1,5 +1,5 @@
 /// Pure FFI bindings for iceoryx2
-/// 이 파일은 C 함수 시그니처, typedef, lookup 등 순수 FFI 선언만 포함합니다.
+/// This file contains only pure FFI declarations including C function signatures, typedefs, and lookups.
 library iceoryx2_ffi;
 
 import 'dart:ffi';
@@ -18,11 +18,17 @@ final DynamicLibrary iox2lib = Platform.isLinux
 
 /// Opaque pointer types for iceoryx2 objects
 final class Iox2Node extends Opaque {}
+
 final class Iox2NodeBuilder extends Opaque {}
+
 final class Iox2Publisher extends Opaque {}
+
 final class Iox2Subscriber extends Opaque {}
+
 final class Iox2Sample extends Opaque {}
+
 final class Iox2PortFactory extends Opaque {}
+
 final class Iox2WaitSet extends Opaque {}
 
 // =============================================================================
@@ -173,7 +179,8 @@ final iox2NodeBuilderCreate = iox2lib
     .asFunction<_IoxNodeBuilderCreate>();
 
 final iox2NodeServiceBuilder = iox2lib
-    .lookup<NativeFunction<_IoxNodeServiceBuilderC>>('iox2_node_service_builder')
+    .lookup<NativeFunction<_IoxNodeServiceBuilderC>>(
+        'iox2_node_service_builder')
     .asFunction<_IoxNodeServiceBuilder>();
 
 final iox2NodeWait = iox2lib
@@ -190,12 +197,14 @@ final iox2ServiceNameNew = iox2lib
     .asFunction<_IoxServiceNameNew>();
 
 final iox2CastServiceNamePtr = iox2lib
-    .lookup<NativeFunction<_IoxCastServiceNamePtrC>>('iox2_cast_service_name_ptr')
+    .lookup<NativeFunction<_IoxCastServiceNamePtrC>>(
+        'iox2_cast_service_name_ptr')
     .asFunction<_IoxCastServiceNamePtr>();
 
 // Service builder functions
 final iox2ServiceBuilderPubSub = iox2lib
-    .lookup<NativeFunction<_IoxServiceBuilderPubSubC>>('iox2_service_builder_pub_sub')
+    .lookup<NativeFunction<_IoxServiceBuilderPubSubC>>(
+        'iox2_service_builder_pub_sub')
     .asFunction<_IoxServiceBuilderPubSub>();
 
 final iox2ServiceBuilderPubSubSetPayloadTypeDetails = iox2lib
@@ -250,7 +259,8 @@ final iox2SubscriberDrop = iox2lib
 
 // Sample functions
 final iox2SampleMutPayloadMut = iox2lib
-    .lookup<NativeFunction<_IoxSampleMutPayloadMutC>>('iox2_sample_mut_payload_mut')
+    .lookup<NativeFunction<_IoxSampleMutPayloadMutC>>(
+        'iox2_sample_mut_payload_mut')
     .asFunction<_IoxSampleMutPayloadMut>();
 
 final iox2SampleMutSend = iox2lib

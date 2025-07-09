@@ -1,42 +1,44 @@
 # iceoryx2 Flutter Publish-Subscribe Example
 
-Flutter application demonstrating zero-copy inter-process communication using iceoryx2. 
+Flutter application demonstrating zero-copy inter-process communication using# 4. Test headless communication
+dart run lib/headless/headless_publisher.dart    # Terminal 1
+dart run lib/headless/headless_subscriber.dart   # Terminal 2eoryx2. 
 Implements layered architecture and event-driven messaging for high-performance, 
 CPU-efficient communication.
 
 ## Architecture Overview
 
 ```
-┌──────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Flutter    │    │   iceoryx2      │    │    Flutter      │
-│  Publisher   │───▶│ Service (DMA)   │───▶│  Subscriber     │
+┌──────────────┐    ┌─────────────────┐    ┌────────────────────┐
+│   Flutter    │    │   iceoryx2      │    │      Flutter       │
+│  Publisher   │───>│ Service (DMA)   │───>│    Subscriber      │
 │     App      │    │ Shared Memory   │    │ App (Event-driven) │
-└──────────────┘    └─────────────────┘    └─────────────────┘
+└──────────────┘    └─────────────────┘    └────────────────────┘
 ```
 
 ### Layered Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                  Public API (iceoryx2.dart)                    │
-│           - Single import for developers                       │
-│           - Internal implementation hiding                     │
+│                  Public API (iceoryx2.dart)                     │
+│           - Single import for developers                        │
+│           - Internal implementation hiding                      │
 ├─────────────────────────────────────────────────────────────────┤
-│          High-Level API (src/iceoryx2_api.dart)                │
-│  - Node, Publisher, Subscriber classes                         │
-│  - Type-safe object-oriented interface                         │
-│  - Automatic resource management (Finalizable)                 │
-│  - Stream-based event handling                                 │
+│          High-Level API (src/iceoryx2_api.dart)                 │
+│  - Node, Publisher, Subscriber classes                          │
+│  - Type-safe object-oriented interface                          │
+│  - Automatic resource management (Finalizable)                  │
+│  - Stream-based event handling                                  │
 ├─────────────────────────────────────────────────────────────────┤
-│       Message Protocol (src/message_protocol.dart)             │
-│  - Message class and serialization/deserialization             │
-│  - Type-safe message classes                                   │
-│  - Protocol version management                                 │
+│       Message Protocol (src/message_protocol.dart)              │
+│  - Message class and serialization/deserialization              │
+│  - Type-safe message classes                                    │
+│  - Protocol version management                                  │
 ├─────────────────────────────────────────────────────────────────┤
-│           FFI Bindings (src/ffi/iceoryx2_ffi.dart)             │
-│  - Pure C function signatures                                  │
-│  - Memory-safe pointer operations                              │
-│  - Direct iceoryx2 C API access                                │
+│           FFI Bindings (src/ffi/iceoryx2_ffi.dart)              │
+│  - Pure C function signatures                                   │
+│  - Memory-safe pointer operations                               │
+│  - Direct iceoryx2 C API access                                 │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
@@ -134,10 +136,10 @@ cd test && ./test_headless.sh
 ### Headless Communication Test
 ```bash
 # Terminal 1: Start publisher
-dart run lib/headless_publisher.dart
+dart run lib/headless/headless_publisher.dart
 
 # Terminal 2: Start subscriber  
-dart run lib/headless_subscriber.dart
+dart run lib/headless/headless_subscriber.dart
 ```
 
 **Expected Output:**
@@ -185,11 +187,15 @@ lib/
 │   │   └── iceoryx2_ffi.dart        # Pure FFI bindings
 │   ├── iceoryx2_api.dart            # High-level object API
 │   └── message_protocol.dart        # Message serialization
+├── gui/                             # Flutter GUI applications
+│   ├── publisher_app.dart           # Publisher UI implementation
+│   └── subscriber_app.dart          # Subscriber UI implementation
+├── headless/                        # Headless test applications
+│   ├── headless_publisher.dart      # Headless publisher test
+│   └── headless_subscriber.dart     # Headless subscriber test
 ├── main.dart                        # Flutter app selector
-├── publisher.dart                   # Publisher UI app
-├── subscriber.dart                  # Subscriber UI app  
-├── headless_publisher.dart          # Headless publisher test
-├── headless_subscriber.dart         # Headless subscriber test
+├── publisher.dart                   # Publisher app entry point
+├── subscriber.dart                  # Subscriber app entry point
 └── iceoryx2_bindings.dart           # Legacy FFI bindings (compatibility)
 
 test/
@@ -357,8 +363,8 @@ pkill -f dart
 ```bash
 # Ensure publisher and subscriber use same service name "flutter_example"
 # Check logs for initialization errors
-dart run lib/headless_publisher.dart  # Should show "✓ Node created"
-dart run lib/headless_subscriber.dart # Should show "✓ Subscriber created"
+dart run lib/headless/headless_publisher.dart  # Should show "✓ Node created"
+dart run lib/headless/headless_subscriber.dart # Should show "✓ Subscriber created"
 ```
 
 ### Debug Mode
