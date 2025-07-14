@@ -1,8 +1,5 @@
 # Event
 
-Before proceeding, all dependencies need to be installed. You can find
-instructions in the [C++ Examples Readme](../README.md).
-
 > The WaitSet wakes up as soon as there is data to read. If the data
 > is not consumed in the callback, the WaitSet will immediately wake
 > up the process again, potentially causing an infinite loop and leading

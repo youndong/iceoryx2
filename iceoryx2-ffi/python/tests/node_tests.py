@@ -10,8 +10,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 
-import iceoryx2_ffi_python as iox2
 import pytest
+
+import iceoryx2 as iox2
 
 service_types = [iox2.ServiceType.Ipc, iox2.ServiceType.Local]
 
@@ -51,7 +52,7 @@ def test_cleanup_dead_nodes_can_be_called(
             service_type, iox2.testing.generate_isolated_config()
         )
     except iox2.NodeCleanupFailure:
-        raise pytest.fail("DID RAISE EXCEPTION")
+        assert False
 
 
 @pytest.mark.parametrize("service_type", service_types)
@@ -76,10 +77,8 @@ def test_created_nodes_can_be_listed(service_type: iox2.ServiceType) -> None:
         match node:
             case node.Alive():
                 assert isinstance(node, iox2.NodeState.Alive)
-                assert (node[0].id == sut_1.id) or (node[0].id == sut_2.id)
-                assert (node[0].details.name == sut_1.name) or (
-                    node[0].details.name == sut_2.name
-                )
+                assert node[0].id in (sut_1.id, sut_2.id)
+                assert node[0].details.name in (sut_1.name, sut_2.name)
             case node.Dead():
                 assert False
             case node.Inaccessible():
@@ -95,4 +94,4 @@ def test_wait_can_be_called(service_type: iox2.ServiceType) -> None:
     try:
         sut.wait(iox2.Duration.from_millis(1))
     except iox2.NodeWaitFailure:
-        raise pytest.fail("DID RAISE EXCEPTION")
+        assert False

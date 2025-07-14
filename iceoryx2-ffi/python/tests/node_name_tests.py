@@ -10,8 +10,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 
-import iceoryx2_ffi_python as iox2
 import pytest
+
+import iceoryx2 as iox2
 
 
 def test_node_name_can_be_constructed() -> None:
@@ -22,4 +23,4 @@ def test_node_name_can_be_constructed() -> None:
 def test_node_name_construction_fails_when_max_len_is_exceeded() -> None:
     sut_value = "x" * (iox2.NodeName.max_len() + 1)
     with pytest.raises(iox2.SemanticStringError):
-        sut = iox2.NodeName.new(sut_value)
+        iox2.NodeName.new(sut_value)

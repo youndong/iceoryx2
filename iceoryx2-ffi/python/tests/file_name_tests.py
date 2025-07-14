@@ -10,8 +10,9 @@
 #
 # SPDX-License-Identifier: Apache-2.0 OR MIT
 
-import iceoryx2_ffi_python as iox2
 import pytest
+
+import iceoryx2 as iox2
 
 
 def test_file_name_can_be_constructed() -> None:
@@ -22,4 +23,4 @@ def test_file_name_can_be_constructed() -> None:
 def test_file_with_invalid_content_cannot_be_constructed() -> None:
     invalid_content = "/i/am/not/a/path"
     with pytest.raises(iox2.SemanticStringError):
-        sut = iox2.FileName.new(invalid_content)
+        iox2.FileName.new(invalid_content)
