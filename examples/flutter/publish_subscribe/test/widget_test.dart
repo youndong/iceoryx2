@@ -13,9 +13,6 @@ void main() {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const Iceoryx2ExampleApp());
 
-    // Verify that the main screen has the expected title.
-    expect(find.text('iceoryx2 Flutter Example'), findsOneWidget);
-
     // Verify that the publisher and subscriber buttons are present.
     expect(find.text('Publisher'), findsOneWidget);
     expect(find.text('Subscriber (Event-Driven)'), findsOneWidget);

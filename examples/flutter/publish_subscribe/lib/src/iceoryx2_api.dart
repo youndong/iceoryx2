@@ -54,9 +54,9 @@ class Node implements Finalizable {
       calloc.free(nodePointer);
 
       _finalizer.attach(this, _handle.cast(), detach: this);
-      print('[Node] ✓ Node "$_name" created successfully');
+      print('[Node] OK Node "$_name" created successfully');
     } catch (e) {
-      print('[Node] ✗ Failed to create node "$_name": $e');
+      print('[Node] ERROR Failed to create node "$_name": $e');
       rethrow;
     }
   }
@@ -93,7 +93,7 @@ class Node implements Finalizable {
       _finalizer.detach(this);
       ffi.iox2NodeDrop(_handle.cast());
       _isClosed = true;
-      print('[Node] ✓ Node "$_name" closed');
+      print('[Node] OK Node "$_name" closed');
     }
   }
 }
@@ -111,9 +111,9 @@ class Publisher implements Finalizable {
       print('[Publisher] Creating publisher for service: "$_serviceName"');
       _handle = _createPublisher(_node._handle, _serviceName);
       _finalizer.attach(this, _handle.cast(), detach: this);
-      print('[Publisher] ✓ Publisher created successfully');
+      print('[Publisher] OK Publisher created successfully');
     } catch (e) {
-      print('[Publisher] ✗ Failed to create publisher: $e');
+      print('[Publisher] ERROR Failed to create publisher: $e');
       rethrow;
     }
   }
@@ -153,7 +153,7 @@ class Publisher implements Finalizable {
       _finalizer.detach(this);
       ffi.iox2PublisherDrop(_handle.cast());
       _isClosed = true;
-      print('[Publisher] ✓ Publisher closed');
+      print('[Publisher] OK Publisher closed');
     }
   }
 
@@ -324,11 +324,10 @@ class Subscriber implements Finalizable {
       _sendPort = _receivePort.sendPort;
       _finalizer.attach(this, _handle.cast(), detach: this);
 
-      // Start background listener
-      _startListener();
-      print('[Subscriber] ✓ Subscriber created successfully');
+      // Don't start background listener automatically to avoid issues
+      print('[Subscriber] OK Subscriber created successfully');
     } catch (e) {
-      print('[Subscriber] ✗ Failed to create subscriber: $e');
+      print('[Subscriber] ERROR Failed to create subscriber: $e');
       rethrow;
     }
   }
@@ -357,6 +356,13 @@ class Subscriber implements Finalizable {
     }
   }
 
+  /// Start event-driven message listening using waitset
+  void startListening() {
+    if (!_isClosed && _isolate == null) {
+      _startListener();
+    }
+  }
+
   /// Close the subscriber and release resources
   void close() {
     if (!_isClosed) {
@@ -369,7 +375,7 @@ class Subscriber implements Finalizable {
       _finalizer.detach(this);
       ffi.iox2SubscriberDrop(_handle.cast());
       _isClosed = true;
-      print('[Subscriber] ✓ Subscriber closed');
+      print('[Subscriber] OK Subscriber closed');
     }
   }
 
@@ -377,24 +383,48 @@ class Subscriber implements Finalizable {
   void _startListener() async {
     _isolate = await Isolate.spawn(
       _listen,
-      [_sendPort, _handle.address],
+      [_sendPort, _handle.address, _node._handle.address],
     );
   }
 
   static void _listen(List<dynamic> args) {
     final sendPort = args[0] as SendPort;
     final handleAddress = args[1] as int;
+    final nodeAddress = args[2] as int;
     final handle = Pointer<ffi.Iox2Subscriber>.fromAddress(handleAddress);
+    final nodeHandle = Pointer<ffi.Iox2Node>.fromAddress(nodeAddress);
 
     while (true) {
       try {
+        // Try to receive available messages first
         final message = _receiveMessage(handle);
         if (message != null) {
           sendPort.send(message);
-        } else {
-          // Avoid busy-waiting
-          sleep(const Duration(milliseconds: 100));
+          continue; // Check for more messages immediately
         }
+
+        // If no message available, use efficient waiting strategy
+        // Instead of busy-waiting, use a moderate sleep with node wait fallback
+        try {
+          final nodeRef = calloc<Pointer<Void>>();
+          nodeRef.value = nodeHandle.cast();
+
+          // Try to wait for events with short timeout (100ms)
+          final waitResult = ffi.iox2NodeWait(nodeRef, 100, 0);
+          calloc.free(nodeRef);
+
+          if (waitResult == ffi.IOX2_OK) {
+            // Event detected, try to receive again immediately
+            continue;
+          }
+        } catch (e) {
+          // If waitset fails, fall back to sleep-based polling
+          // This is safer than crashing
+          sleep(const Duration(milliseconds: 50));
+        }
+
+        // Additional sleep to avoid excessive CPU usage
+        sleep(const Duration(milliseconds: 50));
       } catch (e) {
         print('[Subscriber] Error in listener: $e');
         sleep(const Duration(milliseconds: 100));

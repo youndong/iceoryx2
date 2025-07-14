@@ -43,16 +43,16 @@ class HeadlessPublisher {
       // Create node
       print('[Publisher] Creating iceoryx2 node...');
       _node = Node('iox2-flutter-headless-pub');
-      print('[Publisher] ✓ Node created successfully');
+      print('[Publisher] OK Node created successfully');
 
       // Create publisher for service "flutter_example"
       print('[Publisher] Creating publisher for service "flutter_example"...');
       _publisher = _node!.publisher('flutter_example');
-      print('[Publisher] ✓ Publisher created successfully');
+      print('[Publisher] OK Publisher created successfully');
 
-      print('[Publisher] ✓ Initialization completed');
+      print('[Publisher] OK Initialization completed');
     } catch (e) {
-      print('[Publisher] ✗ Initialization failed: $e');
+      print('[Publisher] ERROR Initialization failed: $e');
       rethrow;
     }
   }
@@ -82,7 +82,7 @@ class HeadlessPublisher {
     try {
       _publisher!.sendText(message, sender: 'Headless Publisher');
       _successCount++;
-      print('[Publisher] ✓ Sent message #$_messageCounter: "$message"');
+      print('[Publisher] OK Sent message #$_messageCounter: "$message"');
 
       // Print periodic stats
       if (_messageCounter % 10 == 0) {
@@ -90,7 +90,7 @@ class HeadlessPublisher {
       }
     } catch (e) {
       _failureCount++;
-      print('[Publisher] ✗ Failed to send message #$_messageCounter: $e');
+      print('[Publisher] ERROR Failed to send message #$_messageCounter: $e');
     }
   }
 
@@ -120,15 +120,15 @@ class HeadlessPublisher {
     if (_publisher != null) {
       print('[Publisher] Closing publisher...');
       _publisher!.close();
-      print('[Publisher] ✓ Publisher closed');
+      print('[Publisher] OK Publisher closed');
     }
 
     if (_node != null) {
       print('[Publisher] Closing node...');
       _node!.close();
-      print('[Publisher] ✓ Node closed');
+      print('[Publisher] OK Node closed');
     }
 
-    print('[Publisher] ✓ Stopped successfully');
+    print('[Publisher] OK Stopped successfully');
   }
 }

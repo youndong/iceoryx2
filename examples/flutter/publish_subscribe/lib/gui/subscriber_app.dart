@@ -50,21 +50,21 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
       // Create node
       print('[Subscriber] Creating iceoryx2 node...');
       _node = Node('iox2-flutter-subscriber');
-      print('[Subscriber] ✓ Node created successfully');
+      print('[Subscriber] OK Node created successfully');
 
       // Create subscriber for service "flutter_example"
       print(
           '[Subscriber] Creating subscriber for service "flutter_example"...');
       _subscriber = _node!.subscriber('flutter_example');
-      print('[Subscriber] ✓ Subscriber created successfully');
+      print('[Subscriber] OK Subscriber created successfully');
 
       setState(() {
         _isInitialized = true;
         _status = 'Ready to receive messages';
       });
-      print('[Subscriber] ✓ Initialization completed successfully');
+      print('[Subscriber] OK Initialization completed successfully');
     } catch (e) {
-      print('[Subscriber] ✗ Initialization failed: $e');
+      print('[Subscriber] ERROR Initialization failed: $e');
       setState(() {
         _status = 'Error: $e';
       });
@@ -87,7 +87,7 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
     _messageSubscription = _subscriber!.messages.listen(
       (message) {
         print(
-            '[Subscriber] ✓ Received message: "${message.content}" from ${message.sender}');
+            '[Subscriber] OK Received message: "${message.content}" from ${message.sender}');
         setState(() {
           _receivedMessages.insert(0,
               '${message.timestamp.toIso8601String()}: ${message.content} (from: ${message.sender})');
@@ -95,7 +95,7 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
         });
       },
       onError: (error) {
-        print('[Subscriber] ✗ Error in message stream: $error');
+        print('[Subscriber] ERROR Error in message stream: $error');
         setState(() {
           _status = 'Error receiving: $error';
         });
@@ -132,7 +132,7 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
       final message = _subscriber!.tryReceive();
       if (message != null) {
         print(
-            '[Subscriber] ✓ Received message: "${message.content}" from ${message.sender}');
+            '[Subscriber] OK Received message: "${message.content}" from ${message.sender}');
         setState(() {
           _receivedMessages.insert(0,
               '${message.timestamp.toIso8601String()}: ${message.content} (from: ${message.sender})');
@@ -145,7 +145,7 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
         });
       }
     } catch (e) {
-      print('[Subscriber] ✗ Error receiving message: $e');
+      print('[Subscriber] ERROR Error receiving message: $e');
       setState(() {
         _status = 'Error receiving: $e';
       });
@@ -161,15 +161,15 @@ class _SubscriberScreenState extends State<SubscriberScreen> {
     if (_subscriber != null) {
       print('[Subscriber] Closing subscriber...');
       _subscriber!.close();
-      print('[Subscriber] ✓ Subscriber closed');
+      print('[Subscriber] OK Subscriber closed');
     }
     if (_node != null) {
       print('[Subscriber] Closing node...');
       _node!.close();
-      print('[Subscriber] ✓ Node closed');
+      print('[Subscriber] OK Node closed');
     }
 
-    print('[Subscriber] ✓ Cleanup completed');
+    print('[Subscriber] OK Cleanup completed');
     super.dispose();
   }
 

@@ -42,17 +42,17 @@ class HeadlessSubscriber {
       // Create node
       print('[Subscriber] Creating iceoryx2 node...');
       _node = Node('iox2-flutter-headless-sub');
-      print('[Subscriber] ✓ Node created successfully');
+      print('[Subscriber] OK Node created successfully');
 
       // Create subscriber for service "flutter_example"
       print(
           '[Subscriber] Creating subscriber for service "flutter_example"...');
       _subscriber = _node!.subscriber('flutter_example');
-      print('[Subscriber] ✓ Subscriber created successfully');
+      print('[Subscriber] OK Subscriber created successfully');
 
-      print('[Subscriber] ✓ Initialization completed');
+      print('[Subscriber] OK Initialization completed');
     } catch (e) {
-      print('[Subscriber] ✗ Initialization failed: $e');
+      print('[Subscriber] ERROR Initialization failed: $e');
       rethrow;
     }
   }
@@ -62,9 +62,13 @@ class HeadlessSubscriber {
       throw Exception('Subscriber or node not initialized');
     }
 
-    print('[Subscriber] Starting event-driven message listening...');
+    print(
+        '[Subscriber] Starting event-driven message listening with waitset...');
     _isListening = true;
     _startTime = DateTime.now();
+
+    // Start the efficient waitset-based listening
+    _subscriber!.startListening();
 
     // Start listening to messages using the high-level API
     _messageSubscription = _subscriber!.messages.listen(
@@ -74,7 +78,7 @@ class HeadlessSubscriber {
         final elapsed =
             _startTime != null ? now.difference(_startTime!).inMilliseconds : 0;
 
-        print('[Subscriber] ✓ #$_totalReceived: "${message.content}" '
+        print('[Subscriber] OK #$_totalReceived: "${message.content}" '
             'from ${message.sender} (${elapsed}ms)');
 
         // Show periodic statistics
@@ -83,7 +87,7 @@ class HeadlessSubscriber {
         }
       },
       onError: (error) {
-        print('[Subscriber] ✗ Error in message stream: $error');
+        print('[Subscriber] ERROR Error in message stream: $error');
       },
       onDone: () {
         print('[Subscriber] Message stream closed');
@@ -107,12 +111,12 @@ class HeadlessSubscriber {
         final message = _subscriber!.tryReceive();
         if (message != null) {
           print(
-              '[Subscriber] ✓ Manual poll received: "${message.content}" from ${message.sender}');
+              '[Subscriber] OK Manual poll received: "${message.content}" from ${message.sender}');
         } else {
           print('[Subscriber] Manual poll: no message available');
         }
       } catch (e) {
-        print('[Subscriber] ✗ Manual poll error: $e');
+        print('[Subscriber] ERROR Manual poll error: $e');
       }
     });
   }
@@ -139,9 +143,9 @@ class HeadlessSubscriber {
     try {
       _subscriber?.close();
       _node?.close();
-      print('[Subscriber] ✓ Cleanup completed');
+      print('[Subscriber] OK Cleanup completed');
     } catch (e) {
-      print('[Subscriber] ✗ Cleanup error: $e');
+      print('[Subscriber] ERROR Cleanup error: $e');
     }
 
     if (_startTime != null) {

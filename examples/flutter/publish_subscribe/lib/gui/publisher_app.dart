@@ -52,12 +52,12 @@ class _PublisherScreenState extends State<PublisherScreen> {
       // Create node
       print('[Publisher] Creating iceoryx2 node...');
       _node = Node('iox2-flutter-publisher');
-      print('[Publisher] ✓ Node created successfully');
+      print('[Publisher] OK Node created successfully');
 
       // Create publisher for service "flutter_example"
       print('[Publisher] Creating publisher for service "flutter_example"...');
       _publisher = _node!.publisher('flutter_example');
-      print('[Publisher] ✓ Publisher created successfully');
+      print('[Publisher] OK Publisher created successfully');
 
       setState(() {
         _isInitialized = true;
@@ -87,7 +87,7 @@ class _PublisherScreenState extends State<PublisherScreen> {
     print('[Publisher] Publishing message: "$message"');
     try {
       _publisher!.sendText(message, sender: 'Flutter Publisher');
-      print('[Publisher] ✓ Message published successfully');
+      print('[Publisher] OK Message published successfully');
       setState(() {
         _sentMessages.insert(
             0, '${DateTime.now().toIso8601String()}: $message');
@@ -95,7 +95,7 @@ class _PublisherScreenState extends State<PublisherScreen> {
       });
       _messageController.clear();
     } catch (e) {
-      print('[Publisher] ✗ Failed to publish message: $e');
+      print('[Publisher] ERROR Failed to publish message: $e');
       setState(() {
         _status = 'Error publishing: $e';
       });
@@ -116,14 +116,14 @@ class _PublisherScreenState extends State<PublisherScreen> {
         print('[Publisher] Auto-publishing: "$autoMessage"');
         try {
           _publisher!.sendText(autoMessage, sender: 'Flutter Auto Publisher');
-          print('[Publisher] ✓ Auto-message published successfully');
+          print('[Publisher] OK Auto-message published successfully');
           setState(() {
             _sentMessages.insert(
                 0, '${DateTime.now().toIso8601String()}: $autoMessage');
             _status = 'Auto-published: $autoMessage';
           });
         } catch (e) {
-          print('[Publisher] ✗ Auto-publish error: $e');
+          print('[Publisher] ERROR Auto-publish error: $e');
           setState(() {
             _status = 'Auto-publish error: $e';
           });
@@ -145,12 +145,12 @@ class _PublisherScreenState extends State<PublisherScreen> {
     if (_publisher != null) {
       print('[Publisher] Closing publisher...');
       _publisher!.close();
-      print('[Publisher] ✓ Publisher closed');
+      print('[Publisher] OK Publisher closed');
     }
     if (_node != null) {
       print('[Publisher] Closing node...');
       _node!.close();
-      print('[Publisher] ✓ Node closed');
+      print('[Publisher] OK Node closed');
     }
 
     print('[Publisher] Cleanup completed');
