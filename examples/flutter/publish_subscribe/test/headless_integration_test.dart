@@ -1,3 +1,15 @@
+// Copyright (c) 2025 Contributors to the Eclipse Foundation
+//
+// See the NOTICE file(s) distributed with this work for additional
+// information regarding copyright ownership.
+//
+// This program and the accompanying materials are made available under the
+// terms of the Apache Software License 2.0 which is available at
+// https://www.apache.org/licenses/LICENSE-2.0, or the MIT license
+// which is available at https://opensource.org/licenses/MIT.
+//
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+
 import 'dart:io';
 import 'dart:async';
 
@@ -12,12 +24,14 @@ void main() async {
   // Test 2: Publisher-Subscriber integration
   await testPublisherSubscriber();
 
-  print('\nPASSED All headless tests completed successfully!');
+  print('
+PASSED All headless tests completed successfully!');
 }
 
 /// Test subscriber without publisher to ensure no segfaults
 Future<void> testSegfaultSafety() async {
-  print('\n Test 1: Segfault Safety (Subscriber without Publisher)');
+  print('
+ Test 1: Segfault Safety (Subscriber without Publisher)');
 
   final subscriberProcess = await Process.start(
     'dart',
@@ -84,7 +98,8 @@ Future<void> testSegfaultSafety() async {
 
 /// Test publisher and subscriber working together
 Future<void> testPublisherSubscriber() async {
-  print('\n Test 2: Publisher-Subscriber Integration');
+  print('
+ Test 2: Publisher-Subscriber Integration');
 
   // Start publisher
   final publisherProcess = await Process.start(
