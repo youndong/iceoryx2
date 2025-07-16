@@ -24,14 +24,12 @@ void main() async {
   // Test 2: Publisher-Subscriber integration
   await testPublisherSubscriber();
 
-  print('
-PASSED All headless tests completed successfully!');
+  print('\nPASSED All headless tests completed successfully!');
 }
 
 /// Test subscriber without publisher to ensure no segfaults
 Future<void> testSegfaultSafety() async {
-  print('
- Test 1: Segfault Safety (Subscriber without Publisher)');
+  print('\n Test 1: Segfault Safety (Subscriber without Publisher)');
 
   final subscriberProcess = await Process.start(
     'dart',
@@ -98,8 +96,7 @@ Future<void> testSegfaultSafety() async {
 
 /// Test publisher and subscriber working together
 Future<void> testPublisherSubscriber() async {
-  print('
- Test 2: Publisher-Subscriber Integration');
+  print('\n Test 2: Publisher-Subscriber Integration');
 
   // Start publisher
   final publisherProcess = await Process.start(

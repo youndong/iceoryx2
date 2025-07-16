@@ -25,8 +25,7 @@ void main() async {
 
   // Handle graceful shutdown
   ProcessSignal.sigint.watch().listen((signal) {
-    print('
-Received SIGINT, shutting down gracefully...');
+    print('\nReceived SIGINT, shutting down gracefully...');
     publisher.stop();
     exit(0);
   });

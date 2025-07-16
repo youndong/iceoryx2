@@ -173,7 +173,7 @@ class MessageHelper {
     lengthPtr.value = actualLength;
 
     // Write message data starting from offset 8
-    final dataPtr = memory.elementAt(8);
+    final dataPtr = memory + 8;
     for (int i = 0; i < actualLength; i++) {
       dataPtr[i] = messageBytes[i];
     }
@@ -191,7 +191,7 @@ class MessageHelper {
     }
 
     // Read message data starting from offset 8
-    final dataPtr = memory.elementAt(8);
+    final dataPtr = memory + 8;
     final messageBytes = <int>[];
 
     for (int i = 0; i < length; i++) {

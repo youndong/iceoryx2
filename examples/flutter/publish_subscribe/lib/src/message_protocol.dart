@@ -119,7 +119,7 @@ class MessageProtocol {
       final messageLength = lengthBytes.getUint64(0, Endian.little);
 
       if (messageLength == 0) {
-        throw FormatException('Empty message');
+        throw const FormatException('Empty message');
       }
 
       if (messageLength > ffi.MESSAGE_MAX_LENGTH) {
